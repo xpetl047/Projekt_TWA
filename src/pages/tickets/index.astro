@@ -1,0 +1,67 @@
+---
+import { getTickets } from '../../lib/tickets';
+import AuthGuard from '../../components/AuthGuard.astro';
+import '../../styles/app.css';
+import '@sg-styles/tokens.css';
+import '@sg-styles/typography.css';
+import '@sg-styles/components.css';
+
+const tickets = await getTickets();
+---
+
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tickety</title>
+  </head>
+  <body>
+    <AuthGuard />
+
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.4rem;">
+        <h1 style="font-size: 2.4rem; margin: 0;">Tickety</h1>
+        <a href="/tickets/new" class="btn btn-primary">+ Nový ticket</a>
+      </div>
+
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Název</th>
+              <th>Status</th>
+              <th>Priorita</th>
+              <th>Přiřazeno</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {tickets.map(ticket => (
+              <tr>
+                <td style="color: #9ca3af;">{ticket.id}</td>
+                <td>{ticket.title}</td>
+                <td><span class={`badge badge-${ticket.status}`}>{ticket.status}</span></td>
+                <td><span class={`badge badge-${ticket.priority}`}>{ticket.priority}</span></td>
+                <td>{ticket.assignee}</td>
+                <td style="white-space: nowrap;">
+                  <a href={`/tickets/${ticket.id}/edit`} style="margin-right: 1.2rem;">Upravit</a>
+                  <button
+                    class="btn"
+                    style="background: #fee2e2; color: #b91c1c; padding: 0.4rem 1rem; font-size: 1.3rem;"
+                    x-data
+                    @click={`fetch('/api/tickets/${ticket.id}', { method: 'DELETE' }).then(() => window.location.reload())`}
+                  >
+                    Smazat
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top: 2rem;"><a href="/">← Zpět</a></p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+---
+import '../styles/app.css';
+import '@sg-styles/tokens.css';
+import '@sg-styles/typography.css';
+import '@sg-styles/components.css';
+---
+
+<html lang="cs">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Ticket App</title>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Vítej!</h1>
+			<br>
+			<a href="/tickets" class="btn btn-primary">Správa ticketů</a>
+			<br>
+			<br>
+			<button id="logout">Odhlásit se</button>
+		</div>
+
+		<script>
+			// Auth guard – nepřihlášený uživatel je přesměrován na /login
+			if (!localStorage.getItem('auth')) {
+				window.location.href = '/login';
+			}
+
+			document.getElementById('logout')?.addEventListener('click', () => {
+				localStorage.removeItem('auth');
+				window.location.href = '/login';
+			});
+		</script>
+	</body>
+</html>
