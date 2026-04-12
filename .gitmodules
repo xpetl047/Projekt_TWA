@@ -1,3 +1,6 @@
 [submodule "twa-styleguide-2026"]
 	path = twa-styleguide-2026
 	url = https://github.com/pacesmarek/twa-styleguide-2026.git
+[submodule "styleguide_projekt"]
+	path = styleguide_projekt
+	url = https://github.com/xpetl047/styleguide_projekt.git
