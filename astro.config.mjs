@@ -3,7 +3,7 @@ import alpine from '@astrojs/alpinejs';
 import node from '@astrojs/node';
 import path from 'path';
 
-const sgStylesPath = './twa-styleguide-2026/src/styles'; // Cesta ke stylům ze styleguide submodulu
+const sgStylesPath = './styleguide_projekt/src/styles'; // Cesta ke stylům ze styleguide submodulu
 
 export default defineConfig({
   output: 'server',
