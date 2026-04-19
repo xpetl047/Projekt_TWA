@@ -55,19 +55,19 @@ const { id } = Astro.params;
           <div class="form-group">
             <label for="status">Status</label>
             <select class="input" id="status" name="status" x-model="player.status">
-              <option value="active" selected={player.status === 'active'}>active</option>
-              <option value="inactive" selected={player.status === 'inactive'}>inactive</option>             
+              <option value="active" :selected="player.status === 'active'">active</option>
+              <option value="inactive" :selected="player.status === 'inactive'">inactive</option>             
             </select>
           </div>
 
           <div class="form-group">
             <label for="role">Role</label>
-            <select class="input" id="role" name="role">
-              <option value="C"    selected={player.role === 'C'}>C</option>
-              <option value="LW" selected={player.role === 'LW'}>LW</option>
-              <option value="RW" selected={player.role === 'RW'}>RW</option>
-              <option value="D" selected={player.role === 'D'}>D</option>
-              <option value="G" selected={player.role === 'G'}>G</option>
+            <select class="input" id="role" name="role" x-model="player.role">
+              <option value="C" :selected="player.role === 'C'">C</option>
+              <option value="LW" :selected="player.role === 'LW'">LW</option>
+              <option value="RW" :selected="player.role === 'RW'">RW</option>
+              <option value="D" :selected="player.role === 'D'">D</option>
+              <option value="G" :selected="player.role === 'G'">G</option>
             </select>
           </div>
 
