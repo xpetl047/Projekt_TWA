@@ -50,7 +50,7 @@ import '@sg-styles/components.css';
                 </td>
                 <td x-text="player.assignee"></td>
                 <td style="white-space: nowrap;">
-                   <a href={`/players/${player.id}/edit`} style="margin-right: 1.2rem;">Upravit</a>
+                   <a :href="`/players/${player.id}/edit`" style="margin-right: 1.2rem;">Upravit</a>
                   <button
                     class="btn"
                     style="background: #fee2e2; color: #b91c1c; padding: 0.4rem 1rem; font-size: 1.3rem;"
@@ -66,7 +66,7 @@ import '@sg-styles/components.css';
         </table>
          <!-- Empty state -->
         <div x-show="!loading && !error && players.length === 0" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
-          Žádné hráče. <a href="/players/new">Vytvořte první hráče</a>.
+          Žádné hráče. <a :href="`/players/new`">Vytvořte první hráče</a>.
         </div>
       </div>
 
