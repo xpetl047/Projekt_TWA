@@ -19,78 +19,55 @@ const { id } = Astro.params;
   <body>
     <AuthGuard />
 
-    <div class="container" style="max-width: 80rem; margin-top: 4rem; margin-bottom: 4rem;">
-      
-      <h1 style="margin-bottom: 2.4rem;">Detail hráče</h1>
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
+      <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Detail hráče</h1>
 
       <div class="card" x-data="playerDetail()" x-init={`loadPlayer('${id}')`}>
         
-        <div x-show="loading" style="text-align: center; padding: 2.4rem 0; color: #6b7280;">
+        <div x-show="loading" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
           Načítání hráče...
         </div>
 
-        <div x-show="error" class="alert alert-error">
-          <p x-text="error" style="margin: 0; font-weight: 500;"></p>
-          <a href="/players" style="display: inline-block; margin-top: 0.8rem; color: inherit; text-decoration: underline;">
-            ← Zpět na seznam
-          </a>
+        <div x-show="error" style="padding: 2.4rem; text-align: center; color: #b91c1c;">
+          <p x-text="error"></p>
+          <a href="/players" style="margin-top: 1.2rem; display: inline-block;">← Zpět na seznam</a>
         </div>
 
-        <template x-if="!loading && !error && player">
-          <div>
-            
-            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
-              <div class="col-4">
-                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Jméno</strong>
-              </div>
-              <div class="col-8">
-                <span x-text="player.name" style="font-weight: 600; font-size: 1.6rem;"></span>
-              </div>
-            </div>
-
-            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
-              <div class="col-4">
-                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Popis</strong>
-              </div>
-              <div class="col-8">
-                <span x-text="player.description || 'Bez popisu'"></span>
-              </div>
-            </div>
-
-            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
-              <div class="col-4">
-                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Status</strong>
-              </div>
-              <div class="col-8">
-                <span class="badge" :class="{'badge-open': player.status === 'active', 'badge-closed': player.status === 'inactive'}" x-text="player.status"></span>
-              </div>
-            </div>
-
-            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
-              <div class="col-4">
-                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Role</strong>
-              </div>
-              <div class="col-8">
-                <span x-text="player.role" style="font-weight: 600;"></span>
-              </div>
-            </div>
-
-            <div class="row" style="margin-bottom: 1.6rem;">
-              <div class="col-4">
-                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Přiřazeno</strong>
-              </div>
-              <div class="col-8">
-                <span x-text="player.assignee || 'Nepřiřazeno'"></span>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 1.6rem; margin-top: 3.2rem;">
-              <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">← Zpět na seznam</a>
-              <a :href="`/players/${player.id}/edit`" class="btn btn-primary">Upravit hráče</a>
-            </div>
-
+        <div x-show="!loading && !error && player">
+          
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Jméno</strong>
+            <p x-text="player.name" style="font-size: 1.125rem; font-weight: 500; margin: 0;"></p>
           </div>
-        </template>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Popis</strong>
+            <p x-text="player.description || 'Bez popisu'" style="margin: 0;"></p>
+          </div>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Status</strong>
+            <p style="margin: 0;">
+              <span class="badge" x-text="player.status"></span>
+            </p>
+          </div>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Role</strong>
+            <p x-text="player.role" style="margin: 0; font-weight: bold;"></p>
+          </div>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Přiřazeno</strong>
+            <p x-text="player.assignee || 'Nepřiřazeno'" style="margin: 0;"></p>
+          </div>
+
+          <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
+            <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">← Zpět na seznam</a>
+            <a :href="`/players/${playerId}/edit`" class="btn btn-primary">Upravit hráče</a>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -105,7 +82,6 @@ const { id } = Astro.params;
             try {
               this.loading = true;
               this.error = null;
-              
               const response = await fetch(`/api/players/${id}`);
               
               if (!response.ok) {
@@ -118,7 +94,6 @@ const { id } = Astro.params;
               this.player = await response.json();
             } catch (err) {
               this.error = err.message;
-              console.error('Chyba při načítání:', err);
             } finally {
               this.loading = false;
             }
