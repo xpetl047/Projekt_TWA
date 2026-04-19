@@ -36,44 +36,95 @@ const { id } = Astro.params;
           </a>
         </div>
 
-        <div x-show="!loading && !error && player">
-          
-          <div class="row" style="margin-bottom: 1.6rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.8rem;">
-            <div class="col-4">
-              <strong style="color: #6b7280; font-size: 1.4rem;">Jméno</strong>
+        <template x-if="!loading && !error && player">
+          <div>
+            
+            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
+              <div class="col-4">
+                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Jméno</strong>
+              </div>
+              <div class="col-8">
+                <span x-text="player.name" style="font-weight: 600; font-size: 1.6rem;"></span>
+              </div>
             </div>
-            <div class="col-8">
-              <span x-text="player.name" style="font-weight: 600; font-size: 1.6rem;"></span>
-            </div>
-          </div>
 
-          <div class="row" style="margin-bottom: 1.6rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.8rem;">
-            <div class="col-4">
-              <strong style="color: #6b7280; font-size: 1.4rem;">Popis</strong>
+            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
+              <div class="col-4">
+                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Popis</strong>
+              </div>
+              <div class="col-8">
+                <span x-text="player.description || 'Bez popisu'"></span>
+              </div>
             </div>
-            <div class="col-8">
-              <span x-text="player.description || 'Bez popisu'"></span>
-            </div>
-          </div>
 
-          <div class="row" style="margin-bottom: 1.6rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.8rem;">
-            <div class="col-4">
-              <strong style="color: #6b7280; font-size: 1.4rem;">Status</strong>
+            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
+              <div class="col-4">
+                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Status</strong>
+              </div>
+              <div class="col-8">
+                <span class="badge" :class="{'badge-open': player.status === 'active', 'badge-closed': player.status === 'inactive'}" x-text="player.status"></span>
+              </div>
             </div>
-            <div class="col-8">
-              <span class="badge" :class="{'badge-open': player.status === 'active', 'badge-closed': player.status === 'inactive'}" x-text="player.status"></span>
-            </div>
-          </div>
 
-          <div class="row" style="margin-bottom: 1.6rem; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.8rem;">
-            <div class="col-4">
-              <strong style="color: #6b7280; font-size: 1.4rem;">Role</strong>
+            <div class="row" style="margin-bottom: 1.6rem; border-bottom: 0.1rem solid var(--table-border-color); padding-bottom: 0.8rem;">
+              <div class="col-4">
+                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Role</strong>
+              </div>
+              <div class="col-8">
+                <span x-text="player.role" style="font-weight: 600;"></span>
+              </div>
             </div>
-            <div class="col-8">
-              <span x-text="player.role" style="font-weight: 600;"></span>
-            </div>
-          </div>
 
-          <div class="row" style="margin-bottom: 1.6rem;">
-            <div class="col-4">
-              <strong style="color: #6b7280; font-size: 1.4rem;">
+            <div class="row" style="margin-bottom: 1.6rem;">
+              <div class="col-4">
+                <strong style="color: var(--table-th-color); font-size: 1.4rem;">Přiřazeno</strong>
+              </div>
+              <div class="col-8">
+                <span x-text="player.assignee || 'Nepřiřazeno'"></span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1.6rem; margin-top: 3.2rem;">
+              <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">← Zpět na seznam</a>
+              <a :href="`/players/${player.id}/edit`" class="btn btn-primary">Upravit hráče</a>
+            </div>
+
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <script is:inline define:vars={{ playerId: id }}>
+      window.playerDetail = function() {
+        return {
+          player: null,
+          loading: true,
+          error: null,
+
+          async loadPlayer(id) {
+            try {
+              this.loading = true;
+              this.error = null;
+              
+              const response = await fetch(`/api/players/${id}`);
+              
+              if (!response.ok) {
+                if (response.status === 404) {
+                  throw new Error('Hráč nenalezen');
+                }
+                throw new Error('Nepodařilo se načíst hráče');
+              }
+  
+              this.player = await response.json();
+            } catch (err) {
+              this.error = err.message;
+              console.error('Chyba při načítání:', err);
+            } finally {
+              this.loading = false;
+            }
+          }
+        };
+      };
+    </script>
+  </body>
+</html>
