@@ -1,0 +1,105 @@
+---
+export const prerender = false;
+
+import AuthGuard from '../../../components/AuthGuard.astro';
+import '../../../styles/app.css';
+import '@sg-styles/tokens.css';
+import '@sg-styles/typography.css';
+import '@sg-styles/components.css';
+
+const { id } = Astro.params;
+---
+
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detail hráče</title>
+  </head>
+  <body>
+    <AuthGuard />
+
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
+      <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Detail hráče</h1>
+
+      <div class="card" x-data="playerDetail()" x-init={`loadPlayer('${id}')`}>
+        
+        <div x-show="loading" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
+          Načítání hráče...
+        </div>
+
+        <div x-show="error" style="padding: 2.4rem; text-align: center; color: #b91c1c;">
+          <p x-text="error"></p>
+          <a href="/players" style="margin-top: 1.2rem; display: inline-block;">← Zpět na seznam</a>
+        </div>
+
+        <div x-show="!loading && !error && player">
+          
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Jméno</strong>
+            <p x-text="player.name" style="font-size: 1.125rem; font-weight: 500; margin: 0;"></p>
+          </div>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Popis</strong>
+            <p x-text="player.description || 'Bez popisu'" style="margin: 0;"></p>
+          </div>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Status</strong>
+            <p style="margin: 0;">
+              <span class="badge" x-text="player.status"></span>
+            </p>
+          </div>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Role</strong>
+            <p x-text="player.role" style="margin: 0; font-weight: bold;"></p>
+          </div>
+
+          <div style="margin-bottom: 1.2rem;">
+            <strong style="color: #6b7280; display: block; font-size: 0.875rem;">Přiřazeno</strong>
+            <p x-text="player.assignee || 'Nepřiřazeno'" style="margin: 0;"></p>
+          </div>
+
+          <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
+            <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">← Zpět na seznam</a>
+            <a :href="`/players/${playerId}/edit`" class="btn btn-primary">Upravit hráče</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script is:inline define:vars={{ playerId: id }}>
+      window.playerDetail = function() {
+        return {
+          player: null,
+          loading: true,
+          error: null,
+
+          async loadPlayer(id) {
+            try {
+              this.loading = true;
+              this.error = null;
+              const response = await fetch(`/api/players/${id}`);
+              
+              if (!response.ok) {
+                if (response.status === 404) {
+                  throw new Error('Hráč nenalezen');
+                }
+                throw new Error('Nepodařilo se načíst hráče');
+              }
+  
+              this.player = await response.json();
+            } catch (err) {
+              this.error = err.message;
+            } finally {
+              this.loading = false;
+            }
+          }
+        };
+      };
+    </script>
+  </body>
+</html>
