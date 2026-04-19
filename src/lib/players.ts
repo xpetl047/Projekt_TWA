@@ -1,10 +1,9 @@
-import fs from 'node:fs/promises'; // Node.js modul pro práci se soubory (čtení, zápis)
-import path from 'node:path';      // Node.js modul pro sestavování cest k souborům
+import { getStore } from '@netlify/blobs'; // Netlify Blobs pro cloudové úložiště
 import { PlayerStatus } from './players';
 
-// Absolutní cesta k datovému souboru.
-// process.cwd() vrátí kořenový adresář projektu (tam kde běží Node.js).
-const DB_PATH = path.join(process.cwd(), 'src/data/players.json');
+// Netlify Blobs store instance pro tickets
+// V produkci běží na Netlify infrastruktuře, lokálně v dev režimu
+const getPlayersStore = () => getStore('players');
 
 // --- Typy ---
 
@@ -27,14 +26,21 @@ export interface Player {
 
 // Přečte soubor, převede JSON text na pole objektů a vrátí ho.
 async function readAll(): Promise<Player[]> {
-  const raw = await fs.readFile(DB_PATH, 'utf-8'); // přečte soubor jako text
-  return JSON.parse(raw);                           // převede JSON string → JS pole
+  const store = getPlayersStore();
+  const raw = await store.get('all', { type: 'text' }); // přečte data jako text
+  if (!raw) return []; // pokud store je prázdný, vrátí prázdné pole
+  return JSON.parse(raw); // převede JSON string → JS pole
 }
 
-// Převede pole objektů na JSON text a zapíše ho do souboru.
+// Převede pole objektů na JSON text a zapíše ho do Netlify Blobs.
 async function writeAll(players: Player[]): Promise<void> {
-  // JSON.stringify(data, null, 2) — třetí argument "2" znamená odsadit 2 mezerami
-  await fs.writeFile(DB_PATH, JSON.stringify(players, null, 2));
+  const store = getPlayersStore();
+  await store.set('all', JSON.stringify(players, null, 2), {
+    metadata: { 
+      updated: new Date().toISOString(),
+      count: players.length.toString()
+    }
+  });
 }
 
 // --- Pomocná funkce pro API routes ---

@@ -377,18 +377,23 @@ import { getTickets, createTicket, parseTicketFormData } from '../../../lib/tick
 // GET /api/tickets — vrátí všechny tickety jako JSON
 export const GET: APIRoute = async () => {
   const tickets = await getTickets();
-  return Response.json(tickets); // Response.json() nastaví Content-Type: application/json
+  return Response.json(tickets, {
+    headers: { 'Cache-Control': 'no-store' },
+  });
 };
 
-// POST /api/tickets — přijme data z formuláře, vytvoří ticket a přesměruje na seznam
-export const POST: APIRoute = async ({ request, redirect }) => {
+// POST /api/tickets — přijme data z formuláře, vytvoří ticket a vrátí ho jako JSON
+export const POST: APIRoute = async ({ request }) => {
   const form = await request.formData(); // přečte tělo requestu jako FormData
-  await createTicket(parseTicketFormData(form));
-  return redirect('/tickets', 302); // 302 = dočasné přesměrování
+  const ticket = await createTicket(parseTicketFormData(form));
+  return Response.json(ticket, {
+    status: 201,
+    headers: { 'Cache-Control': 'no-store' },
+  });
 };
 ```
 
-> `parseTicketFormData` je pomocná funkce z `tickets.ts` — parsování formuláře je na jednom místě a POST i PUT ji sdílí.
+> **Poznámka:** API vrací JSON místo `redirect()`. Formuláře používají Alpine.js + `fetch()` pro odesílání dat a o přesměrování se postara JavaScript.
 
 ### 4b. Vytvoř `src/pages/api/tickets/[id].ts`
 
@@ -396,11 +401,24 @@ Hranaté závorky v názvu souboru znamenají dynamický parametr — `[id]` zac
 
 ```ts
 import type { APIRoute } from 'astro';
-import { updateTicket, deleteTicket, parseTicketFormData } from '../../../lib/tickets';
+import { getTicket, updateTicket, deleteTicket, parseTicketFormData } from '../../../lib/tickets';
 
-// PUT /api/tickets/:id — aktualizuje ticket a přesměruje na seznam
+// GET /api/tickets/:id — vrátí jeden ticket jako JSON
+export const GET: APIRoute = async ({ params }) => {
+  const ticket = await getTicket(params.id!);
+
+  if (!ticket) {
+    return new Response('Ticket nenalezen', { status: 404 });
+  }
+
+  return Response.json(ticket, {
+    headers: { 'Cache-Control': 'no-store' },
+  });
+};
+
+// PUT /api/tickets/:id — aktualizuje ticket a vrátí ho jako JSON
 // Volán přes fetch() z editačního formuláře — HTML formuláře PUT nepodporují
-export const PUT: APIRoute = async ({ params, request, redirect }) => {
+export const PUT: APIRoute = async ({ params, request }) => {
   const form = await request.formData();
   const updated = await updateTicket(params.id!, parseTicketFormData(form));
 
@@ -408,7 +426,9 @@ export const PUT: APIRoute = async ({ params, request, redirect }) => {
     return new Response('Ticket nenalezen', { status: 404 });
   }
 
-  return redirect('/tickets', 302);
+  return Response.json(updated, {
+    headers: { 'Cache-Control': 'no-store' },
+  });
 };
 
 // DELETE /api/tickets/:id — smaže ticket a vrátí prázdnou odpověď 204 No Content
@@ -421,9 +441,14 @@ export const DELETE: APIRoute = async ({ params }) => {
   }
 
   // 204 = úspěch bez těla odpovědi (není co vracet po smazání)
-  return new Response(null, { status: 204 });
+  return new Response(null, { 
+    status: 204,
+    headers: { 'Cache-Control': 'no-store' },
+  });
 };
 ```
+
+> **Poznámka:** Všechny metody vrací JSON nebo 204. Přesměrování řeší JavaScript na klientu pomocí `window.location.href`.
 
 ---
 
@@ -742,3 +767,125 @@ docker compose up
 | Datová vrstva | `src/lib/tickets.ts` — čtení/zápis odděleno od UI |
 | Astro komponenta | `AuthGuard.astro` — sdílená logika bez HTML výstupu |
 | Sdílené CSS | `.badge`, `.table`, `.btn` ve styleguide, ne v aplikaci |
+
+---
+
+## Lokální vývoj vs Netlify deployment
+
+Tento tutoriál popisuje **lokální vývoj** s `@astrojs/node` a `output: 'server'`. Pro **produkční deployment na Netlify** jsou potřeba tyto změny:
+
+### 1. Změna adapteru a output režimu
+
+**Lokálně:** `@astrojs/node` + `output: 'server'`  
+**Netlify:** `@astrojs/netlify` + `output: 'static'` + `prerender: false` na API routes
+
+```bash
+npm install @astrojs/netlify @netlify/blobs
+```
+
+**astro.config.mjs:**
+```js
+import netlify from '@astrojs/netlify';
+
+export default defineConfig({
+  output: 'static',
+  adapter: netlify(),
+  // ... zbytek
+});
+```
+
+**API routes (např. src/pages/api/tickets/index.ts):**
+```ts
+export const prerender = false; // ← přidej na začátek každého API route
+```
+
+### 2. Změna úložiště dat
+
+**Lokálně:** `node:fs/promises` + `tickets.json`  
+**Netlify:** `@netlify/blobs` (cloudové key-value storage)
+
+**src/lib/tickets.ts:**
+```ts
+import { getStore } from '@netlify/blobs';
+
+const getTicketsStore = () => getStore('tickets');
+
+async function readAll(): Promise<Ticket[]> {
+  const store = getTicketsStore();
+  const raw = await store.get('all', { type: 'text' });
+  if (!raw) return [];
+  return JSON.parse(raw);
+}
+
+async function writeAll(tickets: Ticket[]): Promise<void> {
+  const store = getTicketsStore();
+  await store.set('all', JSON.stringify(tickets, null, 2), {
+    metadata: { 
+      updated: new Date().toISOString(),
+      count: tickets.length.toString()
+    }
+  });
+}
+```
+
+### 3. API vrací JSON místo redirectů
+
+**Pro kompatibilitu s fetch()** na Netlify Functions:
+
+```ts
+// ❌ Nefunguje spolehlivě s fetch()
+export const POST: APIRoute = async ({ request, redirect }) => {
+  await createTicket(parseTicketFormData(form));
+  return redirect('/tickets', 302);
+};
+
+// ✅ Správně - vrať JSON
+export const POST: APIRoute = async ({ request }) => {
+  const ticket = await createTicket(parseTicketFormData(form));
+  return Response.json(ticket, { status: 201 });
+};
+```
+
+### 4. Cache busting
+
+**netlify.toml:**
+```toml
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+```
+
+**Client-side fetch:**
+```js
+fetch('/api/tickets?_=' + Date.now(), { cache: 'no-store' })
+```
+
+### 5. Auto-reload mechanismus
+
+Přidej event listenery pro automatické obnovení dat:
+
+```js
+window.addEventListener('focus', () => loadTickets());
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) loadTickets();
+});
+```
+
+**Výsledek:** Změny se projeví okamžitě bez manuálního F5.
+
+---
+
+## Shrnutí rozdílů
+
+| Aspekt | Lokální vývoj | Netlify produkce |
+|--------|---------------|------------------|
+| Adapter | `@astrojs/node` | `@astrojs/netlify` |
+| Output | `output: 'server'` | `output: 'static'` |
+| API routes | Automaticky SSR | `prerender: false` |
+| Storage | `node:fs` + `tickets.json` | `@netlify/blobs` |
+| API responses | redirect() nebo JSON | **pouze JSON** |
+| Cache | Není potřeba | Headers + timestamp |
+| Auto-reload | Není potřeba | Focus/pageshow events |
+
+Pro deployment postup viz [NETLIFY.md](NETLIFY.md).

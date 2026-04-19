@@ -62,24 +62,27 @@ src/
   components/
     AuthGuard.astro       # auth guard — sdílená komponenta pro chráněné stránky
   data/
-    tickets.json          # databáze ticketů (čtení i zápis za běhu)
+    tickets.json          # výchozí data pro lokální vývoj (Netlify používá Blobs)
   lib/
-    tickets.ts            # datová vrstva — CRUD funkce nad tickets.json
+    tickets.ts            # datová vrstva — CRUD funkce nad Netlify Blobs
   pages/
     index.astro           # hlavní stránka (chráněná přihlášením)
     login.astro           # přihlašovací stránka
-    api/tickets/
-      index.ts            # GET /api/tickets, POST /api/tickets
-      [id].ts             # PUT /api/tickets/:id, DELETE /api/tickets/:id
+    api/
+      init-data.ts        # inicializace Netlify Blobs s výchozími daty
+      tickets/
+        index.ts          # GET /api/tickets (JSON), POST /api/tickets (JSON)
+        [id].ts           # GET/PUT/DELETE /api/tickets/:id (všechny JSON)
     tickets/
-      index.astro         # seznam ticketů
-      new.astro           # formulář pro vytvoření ticketu
-      [id]/edit.astro     # formulář pro editaci ticketu
+      index.astro         # seznam ticketů (statický + Alpine.js)
+      new.astro           # formulář pro vytvoření ticketu (Alpine.js + fetch)
+      [id]/edit.astro     # formulář pro editaci (Alpine.js + fetch)
   styles/
     app.css               # vlastní styly aplikace
-astro.config.mjs          # konfigurace Astro (vč. aliasu @sg-styles)
+astro.config.mjs          # konfigurace Astro (static + prerender: false pro API)
 package.json              # závislosti
 docker-compose.yml        # Docker konfigurace (dev)
+netlify.toml              # Netlify build config + cache headers
 twa-styleguide-2026/      # Git submodul — sdílený style guide
 ```
 
@@ -92,31 +95,40 @@ twa-styleguide-2026/      # Git submodul — sdílený style guide
 │  PROHLÍŽEČ                                                      │
 │                                                                 │
 │  localStorage: { auth: { user: "admin" } }                      │
+│  Alpine.js — client-side reactivity + fetch() API calls         │
 └────────────────────────────┬────────────────────────────────────┘
                              │ HTTP request
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  ASTRO SERVER  (output: 'server' + @astrojs/node)               │
+│  NETLIFY (JAMstack)                                             │
+│                                                                 │
+│  CDN → statické HTML (output: 'static')                         │
+│  Functions → API routes (prerender: false)                      │
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  STRÁNKY  src/pages/                                    │   │
+│  │  STRÁNKY  src/pages/  (statické HTML z CDN)             │   │
 │  │                                                         │   │
-│  │  /              index.astro      ── SSR, auth guard     │   │
-│  │  /login         login.astro      ── SSR, Alpine.js form │   │
-│  │  /tickets       tickets/         ── SSR, auth guard     │   │
-│  │  /tickets/new   tickets/new      ── SSR, auth guard     │   │
-│  │  /tickets/:id/edit  [id]/edit    ── SSR, auth guard     │   │
+│  │  /              index.astro      ── static, auth guard  │   │
+│  │  /login         login.astro      ── static, Alpine form │   │
+│  │  /tickets       tickets/         ── static + Alpine.js  │   │
+│  │  /tickets/new   tickets/new      ── static + Alpine.js  │   │
+│  │  /tickets/:id/edit  [id]/edit    ── SSR (prerender:false)│  │
 │  │                                                         │   │
 │  │  Auth guard: <AuthGuard />  ←  src/components/          │   │
+│  │  Data loading: Alpine.js + fetch('/api/tickets')        │   │
 │  └──────────────────────┬──────────────────────────────────┘   │
-│                         │ import                                │
+│                         │ fetch() calls                         │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  API ROUTES  src/pages/api/tickets/                     │   │
+│  │  API ROUTES (Netlify Functions)  api/tickets/           │   │
+│  │  prerender: false ─ server-rendered při každém requestu │   │
 │  │                                                         │   │
 │  │  GET    /api/tickets        index.ts  → JSON seznam     │   │
-│  │  POST   /api/tickets        index.ts  → vytvoř + redirect│  │
-│  │  PUT    /api/tickets/:id    [id].ts   → uprav + redirect │  │
-│  │  DELETE /api/tickets/:id    [id].ts   → smaž, 204       │   │
+│  │  POST   /api/tickets        index.ts  → JSON (201)      │   │
+│  │  GET    /api/tickets/:id    [id].ts   → JSON ticket     │   │
+│  │  PUT    /api/tickets/:id    [id].ts   → JSON updated    │   │
+│  │  DELETE /api/tickets/:id    [id].ts   → 204 No Content  │   │
+│  │                                                         │   │
+│  │  Cache-Control: no-store (viz netlify.toml)             │   │
 │  └──────────────────────┬──────────────────────────────────┘   │
 │                         │ import                                │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -125,11 +137,14 @@ twa-styleguide-2026/      # Git submodul — sdílený style guide
 │  │  parseTicketFormData()   getTickets()   getTicket(id)   │   │
 │  │  createTicket()          updateTicket() deleteTicket()  │   │
 │  └──────────────────────┬──────────────────────────────────┘   │
-│                         │ node:fs/promises                      │
+│                         │ @netlify/blobs                        │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │  DATA  src/data/tickets.json                            │   │
-│  │  [ { id, title, description, status,                   │   │
-│  │      priority, assignee, createdAt }, ... ]             │   │
+│  │  STORAGE  Netlify Blobs (cloudový key-value store)      │   │
+│  │                                                         │   │
+│  │  Store: 'tickets'                                       │   │
+│  │  Key: 'all'                                             │   │
+│  │  Value: JSON.stringify([ { id, title, ... }, ... ])     │   │
+│  │  Metadata: { updated: ISO timestamp, count: "3" }       │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                              │ CSS import (@sg-styles alias)

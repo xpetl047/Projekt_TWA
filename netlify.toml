@@ -1,0 +1,30 @@
+# Netlify Build Configuration
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  command = "git submodule update --init --recursive && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22.12.0"
+
+# Netlify Dev local development
+[dev]
+  command = "npm run dev"
+  port = 4322
+  targetPort = 4322
+  autoLaunch = false
+
+# Vypnout cache pro API endpointy
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# Redirect config (pokud by bylo potřeba SPA routing)
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200

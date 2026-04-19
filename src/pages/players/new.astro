@@ -11,6 +11,7 @@ import '@sg-styles/components.css';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nový hráč</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   </head>
   <body>
     <AuthGuard />
@@ -18,8 +19,8 @@ import '@sg-styles/components.css';
     <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
       <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Nový hráč</h1>
 
-      <div class="card">
-        <form action="/api/players" method="POST">
+      <div class="card" x-data="ticketCreate()">
+        <form @submit.prevent="createTicket">
           <div class="form-group">
             <label for="name">Název</label>
             <input class="input" type="text" id="name" name="name" required />
@@ -55,11 +56,45 @@ import '@sg-styles/components.css';
           </div>
 
           <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
-            <button type="submit" class="btn btn-primary">Vytvořit</button>
+            <button type="submit" class="btn btn-primary" :disabled="saving">
+              <span x-show="!saving">Vytvořit</span>
+              <span x-show="saving">Vytváření...</span>
+            </button>
             <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">Zrušit</a>
           </div>
         </form>
       </div>
     </div>
+    <script is:inline>
+      window.ticketCreate = function() {
+        return {
+          saving: false,
+
+          async createTicket(event) {
+            if (this.saving) return;
+
+            try {
+              this.saving = true;
+              const formData = new FormData(event.target);
+              
+              const response = await fetch('/api/tickets', {
+                method: 'POST',
+                body: formData
+              });
+
+              if (response.ok) {
+                window.location.href = '/tickets';
+              } else {
+                alert('Nepodařilo se vytvořit ticket');
+              }
+            } catch (err) {
+              alert('Chyba při vytváření: ' + err.message);
+            } finally {
+              this.saving = false;
+            }
+          }
+        };
+      };
+    </script>
   </body>
 </html>

@@ -1,17 +1,15 @@
 ---
+export const prerender = false;
+
 import AuthGuard from '../../../components/AuthGuard.astro';
 import '../../../styles/app.css';
 import '@sg-styles/tokens.css';
 import '@sg-styles/typography.css';
 import '@sg-styles/components.css';
-import { getPlayer } from '../../../lib/players';
+
 
 const { id } = Astro.params;
-const player = await getPlayer(id!);
 
-if (!player) {
-  return Astro.redirect('/players');
-}
 ---
 
 <html lang="cs">
@@ -26,30 +24,38 @@ if (!player) {
     <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
       <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Upravit hráče</h1>
 
-      <div class="card">
+            <div class="card" x-data="ticketEdit()" x-init={`loadTicket('${id}')`}>
+        <!-- Loading state -->
+        <div x-show="loading" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
+          Načítání ticketu...
+        </div>
+
+        <!-- Error state -->
+        <div x-show="error" style="padding: 2.4rem; text-align: center; color: #b91c1c;">
+          <p x-text="error"></p>
+          <a href="/tickets" style="margin-top: 1.2rem; display: inline-block;">← Zpět na seznam</a>
+        </div>
+
+        <!-- Edit form -->
+ 
         <form
-          x-data
-          @submit.prevent={`
-            fetch('/api/players/${player.id}', {
-              method: 'PUT',
-              body: new FormData($el)
-            }).then(() => window.location.href = '/players')
-          `}
+           x-show="!loading && !error && ticket"
+          @submit.prevent="saveTicket"
         >
           <div class="form-group">
-            <label for="title">Název</label>
-            <input class="input" type="text" id="title" name="title" value={player.title} required />
+            <label for="name">Jméno</label>
+            <input class="input" type="text" id="name" name="name" x-model="player.name" required />
           </div>
 
           <div class="form-group">
             <label for="description">Popis</label>
-            <textarea class="input" id="description" name="description" rows="4" style="resize: vertical;">{player.description}</textarea>
+            <textarea class="input" id="description" name="description" rows="4" style="resize: vertical;" x-model="player.description"></textarea>
           </div>
 
           <div class="form-group">
             <label for="status">Status</label>
-            <select class="input" id="status" name="status">
-              <option value="active"        selected={player.status === 'active'}>active</option>
+            <select class="input" id="status" name="status" x-model="player.status">
+              <option value="active" selected={player.status === 'active'}>active</option>
               <option value="inactive" selected={player.status === 'inactive'}>inactive</option>             
             </select>
           </div>
@@ -67,15 +73,74 @@ if (!player) {
 
           <div class="form-group">
             <label for="assignee">Přiřazeno</label>
-            <input class="input" type="text" id="assignee" name="assignee" value={player.assignee} />
+            <input class="input" type="text" id="assignee" name="assignee" x-model="player.assignee" />
           </div>
 
           <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
-            <button type="submit" class="btn btn-primary">Uložit</button>
+             <button type="submit" class="btn btn-primary" :disabled="saving">
+              <span x-show="!saving">Uložit</span>
+              <span x-show="saving">Ukládání...</span>
+            </button>
             <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">Zrušit</a>
           </div>
         </form>
       </div>
     </div>
+     <script is:inline define:vars={{ ticketId: id }}>
+      window.ticketEdit = function() {
+        return {
+          ticket: null,
+          loading: true,
+          saving: false,
+          error: null,
+
+          async loadTicket(id) {
+            try {
+              this.loading = true;
+              this.error = null;
+              const response = await fetch(`/api/tickets/${id}`);
+              
+              if (!response.ok) {
+                if (response.status === 404) {
+                  throw new Error('Ticket nenalezen');
+                }
+                throw new Error('Nepodařilo se načíst ticket');
+              }
+              
+              this.ticket = await response.json();
+            } catch (err) {
+              this.error = err.message;
+            } finally {
+              this.loading = false;
+            }
+          },
+
+          async saveTicket(event) {
+            if (this.saving) return;
+
+            try {
+              this.saving = true;
+              const formData = new FormData(event.target);
+              
+              const response = await fetch(`/api/tickets/${ticketId}`, {
+                method: 'PUT',
+                body: formData
+              });
+
+              if (!response.ok) {
+                throw new Error('Nepodařilo se uložit ticket');
+              }
+
+              await response.json(); // parsuj odpověď
+              window.location.href = '/tickets';
+            } catch (err) {
+              alert('Chyba při ukládání: ' + err.message);
+            } finally {
+              this.saving = false;
+            }
+          }
+        };
+      };
+    </script>
   </body>
 </html>

@@ -1,13 +1,13 @@
 import { defineConfig } from 'astro/config';
 import alpine from '@astrojs/alpinejs';
-import node from '@astrojs/node';
+import netlify from '@astrojs/netlify';
 import path from 'path';
 
 const sgStylesPath = './styleguide_projekt/src/styles'; // Cesta ke stylům ze styleguide submodulu
 
 export default defineConfig({
-  output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  output: 'static',
+  adapter: netlify(),
   base: '/',
   integrations: [alpine()],
   server: { port: 4322 },

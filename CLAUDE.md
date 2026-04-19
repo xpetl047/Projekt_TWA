@@ -4,10 +4,20 @@ Ticket management app built with Astro + Alpine.js. Uses `twa-styleguide-2026` a
 
 ## Stack
 
-- **Astro 6** — static site framework, pages in `src/pages/`
-- **Alpine.js 3** — client-side reactivity (auth form, guards)
+- **Astro 6** — static site framework (`output: 'static'`), pages in `src/pages/`
+- **Netlify adapter** — `@astrojs/netlify` converts API routes to Functions
+- **Netlify Blobs** — cloud key-value storage for tickets (replaces local JSON)
+- **Alpine.js 3** — client-side reactivity (auth guard, data fetching)
 - **Plain CSS** — app-specific overrides in `src/styles/app.css`; design system imported from submodule via `@sg-styles` alias
 - **Docker** — preferred dev environment (Node 24 Alpine, port 4322)
+
+## Architecture
+
+- **Static pages** — served from Netlify CDN (fast, no Functions)
+- **API routes** — server-rendered (`prerender: false`), run as Netlify Functions
+- **Client-side data loading** — Alpine.js fetches data via `fetch('/api/tickets')`
+- **JSON API** — all endpoints return JSON (no redirects)
+- **Auto-reload** — pages refresh on focus/pageshow events (no manual F5 needed)
 
 ## Dev server
 
