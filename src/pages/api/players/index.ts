@@ -13,11 +13,11 @@ export const GET: APIRoute = async () => {
 };
 
 // POST /api/players
-// Přijme data z HTML formuláře, vytvoří nový ticket a vrátí ho jako JSON.
+// Přijme data z HTML formuláře, vytvoří nový hráče a vrátí ho jako JSON.
 export const POST: APIRoute = async ({ request }) => {
   const form = await request.formData(); // přečte tělo requestu jako FormData
-  const ticket = await createPlayer(parsePlayerFormData(form));
-  return Response.json(ticket, {
+  const player = await createPlayer(parsePlayerFormData(form));
+  return Response.json(player, {
     status: 201,
     headers: { 'Cache-Control': 'no-store' },
   });

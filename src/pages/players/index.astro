@@ -50,12 +50,12 @@ import '@sg-styles/components.css';
                 </td>
                 <td x-text="player.assignee"></td>
                 <td style="white-space: nowrap;">
-                   <a href={`/tickets/${player.id}/edit`} style="margin-right: 1.2rem;">Upravit</a>
+                   <a href={`/players/${player.id}/edit`} style="margin-right: 1.2rem;">Upravit</a>
                   <button
                     class="btn"
                     style="background: #fee2e2; color: #b91c1c; padding: 0.4rem 1rem; font-size: 1.3rem;"
                     x-data
-                    @click="deleteTicket(ticket.id)"
+                    @click="deletePlayer(player.id)"
                   >
                     Smazat
                   </button>
@@ -65,50 +65,50 @@ import '@sg-styles/components.css';
           </tbody>
         </table>
          <!-- Empty state -->
-        <div x-show="!loading && !error && tickets.length === 0" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
-          Žádné tickety. <a href="/tickets/new">Vytvořte první ticket</a>.
+        <div x-show="!loading && !error && players.length === 0" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
+          Žádné hráče. <a href="/players/new">Vytvořte první hráče</a>.
         </div>
       </div>
 
       <p style="margin-top: 2rem;"><a href="/">← Zpět</a></p>
     </div>
     <script is:inline>
-      window.ticketList = function() {
+      window.playerList = function() {
         return {
-          tickets: [],
+          players: [],
           loading: true,
           error: null,
 
           init() {
-            // Načti tickety při prvním zobrazení
-            this.loadTickets();
+            // Načti hráče při prvním zobrazení
+            this.loadPlayers();
             
             // Refresh dat když se uživatel vrátí na stránku (např. z editace)
             window.addEventListener('pageshow', (event) => {
               // Pokud stránka přichází z cache (back/forward button), refresh
               if (event.persisted) {
-                this.loadTickets();
+                this.loadPlayers();
               }
             });
             
             // Refresh dat když získá stránka focus
             window.addEventListener('focus', () => {
-              this.loadTickets();
+              this.loadPlayers();
             });
             
             // Refresh dat když se stránka stane viditelná (např. po přepnutí tabu)
             document.addEventListener('visibilitychange', () => {
               if (!document.hidden) {
-                this.loadTickets();
+                this.loadPlayers();
               }
             });
           },
 
-          async loadTickets() {
+          async loadPlayers() {
             try {
               this.loading = true;
               this.error = null;
-              const response = await fetch('/api/tickets?_=' + Date.now(), { 
+              const response = await fetch('/api/players?_=' + Date.now(), { 
                 cache: 'no-store',
                 headers: {
                   'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -117,10 +117,10 @@ import '@sg-styles/components.css';
               });
               
               if (!response.ok) {
-                throw new Error('Nepodařilo se načíst tickety');
+                throw new Error('Nepodařilo se načíst hráče');
               }
               
-              this.tickets = await response.json();
+              this.players = await response.json();
             } catch (err) {
               this.error = err.message;
             } finally {
@@ -128,21 +128,21 @@ import '@sg-styles/components.css';
             }
           },
 
-          async deleteTicket(id) {
-            if (!confirm('Opravdu smazat tento ticket?')) {
+          async deletePlayer(id) {
+            if (!confirm('Opravdu smazat tohoto hráče?')) {
               return;
             }
 
             try {
-              const response = await fetch(`/api/tickets/${id}`, {
+              const response = await fetch(`/api/players/${id}`, {
                 method: 'DELETE'
               });
 
               if (!response.ok) {
-                throw new Error('Nepodařilo se smazat ticket');
+                throw new Error('Nepodařilo se smazat hráče ');
               }
 
-              await this.loadTickets();
+              await this.loadPlayers();
             } catch (err) {
               alert('Chyba při mazání: ' + err.message);
             }

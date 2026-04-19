@@ -1,7 +1,7 @@
 import { getStore } from '@netlify/blobs'; // Netlify Blobs pro cloudové úložiště
 import { PlayerStatus } from './players';
 
-// Netlify Blobs store instance pro tickets
+// Netlify Blobs store instance pro hrače
 // V produkci běží na Netlify infrastruktuře, lokálně v dev režimu
 const getPlayersStore = () => getStore('players');
 

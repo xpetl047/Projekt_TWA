@@ -19,8 +19,8 @@ import '@sg-styles/components.css';
     <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
       <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Nový hráč</h1>
 
-      <div class="card" x-data="ticketCreate()">
-        <form @submit.prevent="createTicket">
+      <div class="card" x-data="playerCreate()">
+        <form @submit.prevent="createPlayer">
           <div class="form-group">
             <label for="name">Název</label>
             <input class="input" type="text" id="name" name="name" required />
@@ -66,26 +66,26 @@ import '@sg-styles/components.css';
       </div>
     </div>
     <script is:inline>
-      window.ticketCreate = function() {
+      window.playerCreate = function() {
         return {
           saving: false,
 
-          async createTicket(event) {
+          async createPlayer(event) {
             if (this.saving) return;
 
             try {
               this.saving = true;
               const formData = new FormData(event.target);
               
-              const response = await fetch('/api/tickets', {
+              const response = await fetch('/api/players', {
                 method: 'POST',
                 body: formData
               });
 
               if (response.ok) {
-                window.location.href = '/tickets';
+                window.location.href = '/players';
               } else {
-                alert('Nepodařilo se vytvořit ticket');
+                alert('Nepodařilo se vytvořit hráče');
               }
             } catch (err) {
               alert('Chyba při vytváření: ' + err.message);

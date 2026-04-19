@@ -24,23 +24,23 @@ const { id } = Astro.params;
     <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
       <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Upravit hráče</h1>
 
-            <div class="card" x-data="ticketEdit()" x-init={`loadTicket('${id}')`}>
+            <div class="card" x-data="playerEdit()" x-init={`loadPlayer('${id}')`}>
         <!-- Loading state -->
         <div x-show="loading" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
-          Načítání ticketu...
+          Načítání hráče...
         </div>
 
         <!-- Error state -->
         <div x-show="error" style="padding: 2.4rem; text-align: center; color: #b91c1c;">
           <p x-text="error"></p>
-          <a href="/tickets" style="margin-top: 1.2rem; display: inline-block;">← Zpět na seznam</a>
+          <a href="/players" style="margin-top: 1.2rem; display: inline-block;">← Zpět na seznam</a>
         </div>
 
         <!-- Edit form -->
  
         <form
-           x-show="!loading && !error && ticket"
-          @submit.prevent="saveTicket"
+           x-show="!loading && !error && player"
+          @submit.prevent="savePlayer"
         >
           <div class="form-group">
             <label for="name">Jméno</label>
@@ -86,28 +86,28 @@ const { id } = Astro.params;
         </form>
       </div>
     </div>
-     <script is:inline define:vars={{ ticketId: id }}>
-      window.ticketEdit = function() {
+     <script is:inline define:vars={{ playerId: id }}>
+      window.playerEdit = function() {
         return {
-          ticket: null,
+          player: null,
           loading: true,
           saving: false,
           error: null,
 
-          async loadTicket(id) {
+          async loadPlayer(id) {
             try {
               this.loading = true;
               this.error = null;
-              const response = await fetch(`/api/tickets/${id}`);
+              const response = await fetch(`/api/players/${id}`);
               
               if (!response.ok) {
                 if (response.status === 404) {
-                  throw new Error('Ticket nenalezen');
+                  throw new Error('Hráč nenalezen');
                 }
-                throw new Error('Nepodařilo se načíst ticket');
+                throw new Error('Nepodařilo se načíst hráče');
               }
               
-              this.ticket = await response.json();
+              this.player = await response.json();
             } catch (err) {
               this.error = err.message;
             } finally {
@@ -115,24 +115,24 @@ const { id } = Astro.params;
             }
           },
 
-          async saveTicket(event) {
+          async savePlayer(event) {
             if (this.saving) return;
 
             try {
               this.saving = true;
               const formData = new FormData(event.target);
               
-              const response = await fetch(`/api/tickets/${ticketId}`, {
+              const response = await fetch(`/api/players/${playerId}`, {
                 method: 'PUT',
                 body: formData
               });
 
               if (!response.ok) {
-                throw new Error('Nepodařilo se uložit ticket');
+                throw new Error('Nepodařilo se uložit hráče');
               }
 
               await response.json(); // parsuj odpověď
-              window.location.href = '/tickets';
+              window.location.href = '/players';
             } catch (err) {
               alert('Chyba při ukládání: ' + err.message);
             } finally {

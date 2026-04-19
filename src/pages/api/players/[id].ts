@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ params }) => {
 };
 
 // PUT /api/players/:id
-// Přijme data z formuláře, aktualizuje ticket a vrátí ho jako JSON.
+// Přijme data z formuláře, aktualizuje hráče a vrátí ho jako JSON.
 // Volán přes fetch() z editačního formuláře — HTML formuláře PUT nepodporují.
 export const PUT: APIRoute = async ({ params, request}) => {
   const form = await request.formData();
