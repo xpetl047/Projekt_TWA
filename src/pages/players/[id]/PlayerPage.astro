@@ -61,14 +61,7 @@ const { id } = Astro.params;
               <strong style="color: #6b7280; font-size: 1.4rem;">Status</strong>
             </div>
             <div class="col-8">
-              <span 
-                class="badge" 
-                :class="{
-                  'badge-open': player.status === 'active',
-                  'badge-closed': player.status === 'inactive'
-                }"
-                x-text="player.status"
-              ></span>
+              <span class="badge" :class="{'badge-open': player.status === 'active',badge-closed': player.status === 'inactive'}" x-text="player.status"></span>
             </div>
           </div>
 
