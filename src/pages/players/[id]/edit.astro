@@ -1,0 +1,81 @@
+---
+import AuthGuard from '../../../components/AuthGuard.astro';
+import '../../../styles/app.css';
+import '@sg-styles/tokens.css';
+import '@sg-styles/typography.css';
+import '@sg-styles/components.css';
+import { getPlayer } from '../../../lib/players';
+
+const { id } = Astro.params;
+const player = await getPlayer(id!);
+
+if (!player) {
+  return Astro.redirect('/players');
+}
+---
+
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upravit hráče</title>
+  </head>
+  <body>
+    <AuthGuard />
+
+    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
+      <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Upravit hráče</h1>
+
+      <div class="card">
+        <form
+          x-data
+          @submit.prevent={`
+            fetch('/api/players/${player.id}', {
+              method: 'PUT',
+              body: new FormData($el)
+            }).then(() => window.location.href = '/players')
+          `}
+        >
+          <div class="form-group">
+            <label for="title">Název</label>
+            <input class="input" type="text" id="title" name="title" value={player.title} required />
+          </div>
+
+          <div class="form-group">
+            <label for="description">Popis</label>
+            <textarea class="input" id="description" name="description" rows="4" style="resize: vertical;">{player.description}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select class="input" id="status" name="status">
+              <option value="active"        selected={player.status === 'active'}>active</option>
+              <option value="inactive" selected={player.status === 'inactive'}>inactive</option>             
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="role">Role</label>
+            <select class="input" id="role" name="role">
+              <option value="C"    selected={player.role === 'C'}>C</option>
+              <option value="LW" selected={player.role === 'LW'}>LW</option>
+              <option value="RW" selected={player.role === 'RW'}>RW</option>
+              <option value="D" selected={player.role === 'D'}>D</option>
+              <option value="G" selected={player.role === 'G'}>G</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="assignee">Přiřazeno</label>
+            <input class="input" type="text" id="assignee" name="assignee" value={player.assignee} />
+          </div>
+
+          <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
+            <button type="submit" class="btn btn-primary">Uložit</button>
+            <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">Zrušit</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

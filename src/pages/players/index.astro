@@ -1,27 +1,27 @@
 ---
-import { getTickets } from '../../lib/tickets';
+import { getPlayers } from '../../lib/players';
 import AuthGuard from '../../components/AuthGuard.astro';
 import '../../styles/app.css';
 import '@sg-styles/tokens.css';
 import '@sg-styles/typography.css';
 import '@sg-styles/components.css';
 
-const tickets = await getTickets();
+const players = await getPlayers();
 ---
 
 <html lang="cs">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tickety</title>
+    <title>Hráči</title>
   </head>
   <body>
     <AuthGuard />
 
     <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.4rem;">
-        <h1 style="font-size: 2.4rem; margin: 0;">Tickety</h1>
-        <a href="/tickets/new" class="btn btn-primary">+ Nový ticket</a>
+        <h1 style="font-size: 2.4rem; margin: 0;">Hráči</h1>  
+        <a href="/players/new" class="btn btn-primary">+ Nový hráč</a>
       </div>
 
       <div class="card">
@@ -29,28 +29,28 @@ const tickets = await getTickets();
           <thead>
             <tr>
               <th>#</th>
-              <th>Název</th>
+              <th>Jméno</th>
               <th>Status</th>
-              <th>Priorita</th>
+              <th>Role</th>
               <th>Přiřazeno</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {tickets.map(ticket => (
+            {players.map(player => (
               <tr>
-                <td style="color: #9ca3af;">{ticket.id}</td>
-                <td>{ticket.title}</td>
-                <td><span class={`badge badge-${ticket.status}`}>{ticket.status}</span></td>
-                <td><span class={`badge badge-${ticket.priority}`}>{ticket.priority}</span></td>
-                <td>{ticket.assignee}</td>
+                <td style="color: #9ca3af;">{player.id}</td>
+                <td>{player.name}</td>
+                <td><span class={`badge badge-${player.status}`}>{player.status}</span></td>
+                <td><span class={`badge badge-${player.role}`}>{player.role}</span></td>
+                <td>{player.assignee}</td>
                 <td style="white-space: nowrap;">
-                  <a href={`/tickets/${ticket.id}/edit`} style="margin-right: 1.2rem;">Upravit</a>
+                  <a href={`/players/${player.id}/edit`} style="margin-right: 1.2rem;">Upravit</a>
                   <button
                     class="btn"
                     style="background: #fee2e2; color: #b91c1c; padding: 0.4rem 1rem; font-size: 1.3rem;"
                     x-data
-                    @click={`fetch('/api/tickets/${ticket.id}', { method: 'DELETE' }).then(() => window.location.reload())`}
+                    @click={`fetch('/api/players/${player.id}', { method: 'DELETE' }).then(() => window.location.reload())`}
                   >
                     Smazat
                   </button>

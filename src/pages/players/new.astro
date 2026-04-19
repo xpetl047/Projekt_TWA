@@ -10,19 +10,19 @@ import '@sg-styles/components.css';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nový ticket</title>
+    <title>Nový hráč</title>
   </head>
   <body>
     <AuthGuard />
 
     <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
-      <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Nový ticket</h1>
+      <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Nový hráč</h1>
 
       <div class="card">
-        <form action="/api/tickets" method="POST">
+        <form action="/api/players" method="POST">
           <div class="form-group">
-            <label for="title">Název</label>
-            <input class="input" type="text" id="title" name="title" required />
+            <label for="name">Název</label>
+            <input class="input" type="text" id="name" name="name" required />
           </div>
 
           <div class="form-group">
@@ -33,18 +33,19 @@ import '@sg-styles/components.css';
           <div class="form-group">
             <label for="status">Status</label>
             <select class="input" id="status" name="status">
-              <option value="open">open</option>
-              <option value="in-progress">in-progress</option>
-              <option value="closed">closed</option>
+              <option value="active">active</option>
+              <option value="inactive">inactive</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="priority">Priorita</label>
-            <select class="input" id="priority" name="priority">
-              <option value="low">low</option>
-              <option value="medium" selected>medium</option>
-              <option value="high">high</option>
+            <label for="role">Role</label>
+            <select class="input" id="role" name="role">
+              <option value="C">C</option>
+              <option value="LW" selected>LW</option>
+              <option value="RW">RW</option>
+              <option value="D">D</option>
+              <option value="G">G</option>
             </select>
           </div>
 
@@ -55,7 +56,7 @@ import '@sg-styles/components.css';
 
           <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
             <button type="submit" class="btn btn-primary">Vytvořit</button>
-            <a href="/tickets" class="btn" style="background: #e5e7eb; color: #374151;">Zrušit</a>
+            <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">Zrušit</a>
           </div>
         </form>
       </div>
