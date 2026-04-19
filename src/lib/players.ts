@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'; // Node.js modul pro práci se soubory (čtení, zápis)
 import path from 'node:path';      // Node.js modul pro sestavování cest k souborům
-import { TicketStatus } from './tickets';
+import { PlayerStatus } from './players';
 
 // Absolutní cesta k datovému souboru.
 // process.cwd() vrátí kořenový adresář projektu (tam kde běží Node.js).
