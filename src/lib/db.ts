@@ -50,7 +50,15 @@ async function read<T>(key: string, fallback: () => Promise<{default: T}>): Prom
   try {
     const store = getStore('hockeydb');
     const raw = await store.get(key);
-    if (raw) return JSON.parse(raw) as T;
+    if (raw) {
+      const parsed = JSON.parse(raw) as T;
+      // Pokud jsou data prázdné pole a fallback má data, použij fallback
+      if (Array.isArray(parsed) && parsed.length === 0) {
+        const { default: data } = await fallback();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+      return parsed;
+    }
   } catch {}
   const { default: data } = await fallback();
   return data;
