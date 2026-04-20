@@ -32,7 +32,7 @@ const preselect = Astro.url.searchParams.get('hrac') ?? '';
       </button>
     </div>
   </div>
-  <script>
+  <script is:inline>
     function newMereni() {
       const tr=()=>{try{return JSON.parse(localStorage.getItem('trener_session')||'null');}catch{return null;}};
       return {

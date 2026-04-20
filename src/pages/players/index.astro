@@ -107,7 +107,7 @@ import AuthGuard from '../../components/AuthGuard.astro';
       x-text="`Zobrazeno ${filtered.length} z ${hraci.length} hráčů`"></p>
   </div>
 
-  <script>
+  <script is:inline>
     const KAT = ['U8-U10','U11-U12','U13-U14','U15-U16','U17-U20'];
     const COLORS = ['#1a56db','#7c3aed','#dc2626','#16a34a','#d97706','#0891b2','#db2777','#065f46','#1e40af','#9d174d','#92400e','#1e3a5f','#4338ca'];
     function playersList() {

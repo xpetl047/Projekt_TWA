@@ -44,7 +44,7 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
       </button>
     </div>
   </div>
-  <script define:vars={{ hraci }}>
+  <script is:inline define:vars={{ hraci }}>
     function newZapas() {
       const tr=()=>{try{return JSON.parse(localStorage.getItem('trener_session')||'null');}catch{return null;}};
       return {
