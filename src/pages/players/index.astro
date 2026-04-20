@@ -6,74 +6,47 @@ import '@sg-styles/typography.css';
 import '@sg-styles/components.css';
 
 
+
+
+
+import MainLayout from '../../layouts/MainLayout.astro';
+import playersData from '../../data/players.json';
 ---
-
-<html lang="cs">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hráči</title>
-  </head>
-  <body>
-    <AuthGuard />
-
-    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.4rem;">
-        <h1 style="font-size: 2.4rem; margin: 0;">Hráči</h1>  
-        <a href="/players/new" class="btn btn-primary">+ Nový hráč</a>
-      </div>
-
-      <div class="card" x-data="playerList()" x-init="init()">
-        <!-- Loading state -->
-        <div x-show="loading" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
-          Načítání hráčů...
-        </div>
-
-        <!-- Error state -->
-        <div x-show="error" style="padding: 2.4rem; text-align: center; color: #b91c1c;">
-          <p x-text="error"></p>
-        </div>
-
-        <!-- Players table -->
-        <table class="table" x-show="!loading && !error">
+<MainLayout title="Soupiska hráčů">
+  <div class="row">
+    <div class="col-12">
+      <h1>Soupiska hráčů</h1>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Hráč</th>
+              <th>Kategorie</th>
+              <th>Pozice</th>
+              <th>Číslo</th>
+              <th>Góly</th>
+              <th>Akce</th>
+            </tr>
           </thead>
           <tbody>
-            <template x-for="player in players" :key="player.id">
+            {playersData.map((player) => (
               <tr>
-                <td style="color: #9ca3af;" x-text="player.id"></td>
-                <td x-text="player.name"></td>
+                <td><strong>{player.name}<!-- {player.jmeno}--></strong></td>
+               <!-- <td><span class="badge badge-open">{player.kat}</span></td>-->
+                <!--<td><span class="badge badge-in-progress">{player.poz}</span></td>-->
+                <!--<td>#{player.cislo}</td>-->
+               <!-- <td>{player.goly}</td>-->
                 <td>
-                  <span :class="`badge badge-${player.status}`" x-text="player.status"></span>
-                </td>
-                <td>
-                  <span :class="`badge badge-${player.role}`" x-text="player.role"></span>
-                </td>
-                <td x-text="player.assignee"></td>
-                <td style="white-space: nowrap;">
-                   <a :href="`/players/${player.id}/edit`" style="margin-right: 1.2rem;">Upravit</a>
-                   <a :href="`/players/${player.id}/PlayerPage`" style="margin-right: 1.2rem;">PlayerPage</a>
-                   <button
-                    class="btn"
-                    style="background: #fee2e2; color: #b91c1c; padding: 0.4rem 1rem; font-size: 1.3rem;"
-                    x-data
-                    @click="deletePlayer(player.id)"
-                  >
-                    Smazat
-                  </button>
+                  <a href={`/players/${player.id}`} class="btn btn-primary">Detail</a>
                 </td>
               </tr>
-            </template>
+            ))}
           </tbody>
         </table>
-         <!-- Empty state -->
-        <div x-show="!loading && !error && players.length === 0" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
-          Žádné hráče. <a :href="`/players/new`">Vytvořte první hráče</a>.
-        </div>
       </div>
-
-      <p style="margin-top: 2rem;"><a href="/">← Zpět</a></p>
     </div>
-    <script is:inline>
+  </div>
+  <script is:inline>
       window.playerList = function() {
         return {
           players: [],
@@ -151,5 +124,5 @@ import '@sg-styles/components.css';
         };
       };
     </script>
-  </body>
-</html>
+</MainLayout>
+

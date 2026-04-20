@@ -1,0 +1,27 @@
+---
+const pathname = new URL(Astro.request.url).pathname;
+---
+<header class="container">
+  <div class="card">
+    <div class="row">
+      <div class="col-4">
+        <a href="/">
+          <strong>HC MLÁDEŽ</strong>
+        </a>
+      </div>
+      <div class="col-8">
+        <nav class="row">
+          <div class="col-3">
+            <a href="/">Přehled</a>
+          </div>
+          <div class="col-3">
+            <a href="/players">Hráči</a>
+          </div>
+          <div class="col-3">
+            <span class="badge badge-open">Petr Novotný</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>
