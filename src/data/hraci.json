@@ -1,0 +1,15 @@
+[
+  {"id":"h001","jmeno":"Tomáš","prijmeni":"Novák","narozeni":"2013-03-12","kategorie":"U13-U14","pozice":"Útočník","cislo":11,"ruka":"Levá","rodic_kontakt":"Pavel Novák, 777 123 456","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h002","jmeno":"Martin","prijmeni":"Dvořák","narozeni":"2012-07-22","kategorie":"U13-U14","pozice":"Obránce","cislo":5,"ruka":"Pravá","rodic_kontakt":"Jana Dvořáková, 605 234 567","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h003","jmeno":"Jakub","prijmeni":"Svoboda","narozeni":"2013-11-05","kategorie":"U13-U14","pozice":"Brankář","cislo":1,"ruka":"Levá","rodic_kontakt":"Radek Svoboda, 732 345 678","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h004","jmeno":"Lukáš","prijmeni":"Procházka","narozeni":"2012-01-30","kategorie":"U13-U14","pozice":"Útočník","cislo":19,"ruka":"Pravá","rodic_kontakt":"Petra Procházková, 720 456 789","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h005","jmeno":"Adam","prijmeni":"Krejčí","narozeni":"2015-06-14","kategorie":"U11-U12","pozice":"Útočník","cislo":7,"ruka":"Levá","rodic_kontakt":"Ondřej Krejčí, 608 567 890","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h006","jmeno":"Marek","prijmeni":"Horák","narozeni":"2014-09-20","kategorie":"U11-U12","pozice":"Obránce","cislo":3,"ruka":"Pravá","rodic_kontakt":"Jiří Horák, 775 678 901","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h007","jmeno":"Vojtěch","prijmeni":"Pospíšil","narozeni":"2014-02-08","kategorie":"U11-U12","pozice":"Útočník","cislo":14,"ruka":"Levá","rodic_kontakt":"Karel Pospíšil, 736 789 012","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h008","jmeno":"Filip","prijmeni":"Blažek","narozeni":"2017-04-17","kategorie":"U8-U10","pozice":"Útočník","cislo":8,"ruka":"Pravá","rodic_kontakt":"Lucie Blažková, 604 890 123","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h009","jmeno":"Ondřej","prijmeni":"Veselý","narozeni":"2016-12-03","kategorie":"U8-U10","pozice":"Útočník","cislo":9,"ruka":"Levá","rodic_kontakt":"Michal Veselý, 721 901 234","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h010","jmeno":"Petr","prijmeni":"Šimánek","narozeni":"2010-08-11","kategorie":"U15-U16","pozice":"Útočník","cislo":22,"ruka":"Pravá","rodic_kontakt":"Václav Šimánek, 603 012 345","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h011","jmeno":"Radek","prijmeni":"Marků","narozeni":"2009-05-25","kategorie":"U15-U16","pozice":"Obránce","cislo":4,"ruka":"Levá","rodic_kontakt":"Zdeněk Marků, 737 123 456","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h012","jmeno":"Jan","prijmeni":"Kopecký","narozeni":"2007-10-19","kategorie":"U17-U20","pozice":"Útočník","cislo":17,"ruka":"Pravá","rodic_kontakt":"Miroslav Kopecký, 606 234 567","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"},
+  {"id":"h013","jmeno":"Štěpán","prijmeni":"Růžička","narozeni":"2008-03-30","kategorie":"U17-U20","pozice":"Obránce","cislo":6,"ruka":"Levá","rodic_kontakt":"Eva Růžičková, 733 345 678","aktivni":true,"vytvoreno":"2024-09-01T08:00:00Z"}
+]

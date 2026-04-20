@@ -1,64 +1,201 @@
 ---
-import '../styles/app.css';
-import '@sg-styles/tokens.css';
-import '@sg-styles/typography.css';
-import '@sg-styles/components.css';
-
-
-
 import MainLayout from '../layouts/MainLayout.astro';
+import AuthGuard from '../components/AuthGuard.astro';
 ---
-<MainLayout title="Dashboard | HC Mládež">
-  <div class="row">
-    <div class="col-12">
-      <h1>Dobrý den, Petře 👋</h1>
-    </div>
-  </div>
+<MainLayout title="Přehled | HC Mládež" activeNav="home">
+  <AuthGuard />
 
-  <div class="row">
-    <div class="col-4">
-      <div class="card">
-        <h2>13</h2>
-        <label>Hráčů celkem</label>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card">
-        <h2 class="badge-in-progress">5</h2>
-        <label>Aktivních kategorií</label>
-      </div>
-    </div>
-    <div class="col-4">
-      <div class="card">
-        <h2>3</h2>
-        <label>Zápasů sezóny</label>
-      </div>
-    </div>
-  </div>
+  <div x-data="dashboard()" x-init="init()">
 
-  <div class="row">
-    <div class="col-12">
-      <div class="card">
-        <h3>Rychlé akce</h3>
-        <div class="row">
-          <div class="col-3">
-            <a href="/players" class="btn btn-primary">Zobrazit hráče</a>
-          </div>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Dobrý den, <span x-text="trener?.jmeno ?? '...'"></span> 👋</h1>
+        <p class="page-sub">Přehled HC Mládež</p>
+      </div>
+      <div class="page-actions">
+        <a href="/players/new" class="btn btn-primary">+ Přidat hráče</a>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div x-show="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Načítám data...</p>
+    </div>
+
+    <div x-show="!loading">
+
+      <!-- Metriky -->
+      <div class="metrics-grid">
+        <div class="card metric-card">
+          <div class="metric-icon">👥</div>
+          <div class="metric-val" x-text="stats.hracu"></div>
+          <div class="metric-lbl">Hráčů celkem</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-icon">🏒</div>
+          <div class="metric-val" x-text="stats.kategorii"></div>
+          <div class="metric-lbl">Kategorií</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-icon">🏆</div>
+          <div class="metric-val" x-text="stats.zapasu"></div>
+          <div class="metric-lbl">Zápasů</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-icon">💪</div>
+          <div class="metric-val" x-text="stats.testu"></div>
+          <div class="metric-lbl">Testů</div>
         </div>
       </div>
+
+      <!-- Kategorie -->
+      <div class="section-header">
+        <h2 class="section-title">🏒 Kategorie</h2>
+      </div>
+      <div class="kat-grid">
+        <template x-for="k in kategorieStats" :key="k.nazev">
+          <a :href="`/players?kategorie=${encodeURIComponent(k.nazev)}`" class="card kat-card">
+            <div class="kat-name" x-text="k.nazev"></div>
+            <div class="kat-count" x-text="k.pocet"></div>
+            <div class="kat-meta" x-text="`${k.u}Ú · ${k.o}O · ${k.b}B`"></div>
+          </a>
+        </template>
+      </div>
+
+      <!-- 2 sloupce -->
+      <div class="two-col">
+
+        <!-- Poslední zápasy -->
+        <div>
+          <div class="section-header">
+            <h2 class="section-title">🏆 Poslední zápasy</h2>
+            <a href="/zapasy" class="btn btn-secondary btn-sm">Všechny →</a>
+          </div>
+          <div class="card" style="padding:0">
+            <table class="table">
+              <thead>
+                <tr><th>Datum</th><th>Kat.</th><th>Soupeř</th><th>Výsledek</th></tr>
+              </thead>
+              <tbody>
+                <template x-for="z in posledniZapasy" :key="z.id">
+                  <tr @click="window.location.href='/zapasy'">
+                    <td class="text-sm text-muted" x-text="fmtDate(z.datum)"></td>
+                    <td><span class="badge badge-kat" x-text="z.kategorie"></span></td>
+                    <td x-text="z.souper"></td>
+                    <td>
+                      <span class="badge"
+                        :class="z.skore_my > z.skore_souper ? 'badge-closed' : z.skore_my < z.skore_souper ? 'badge-high' : 'badge-low'"
+                        x-text="`${z.skore_my}:${z.skore_souper}`">
+                      </span>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="posledniZapasy.length === 0">
+                  <td colspan="4" class="empty-state">Zatím žádné zápasy</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top střelci -->
+        <div>
+          <div class="section-header">
+            <h2 class="section-title">⭐ Top střelci</h2>
+            <a href="/players" class="btn btn-secondary btn-sm">Všichni →</a>
+          </div>
+          <div class="card" style="padding:0">
+            <template x-for="(h, i) in topStrelci" :key="h.id">
+              <div class="top-row" @click="window.location.href=`/players/${h.id}`">
+                <div class="top-rank" x-text="i + 1"></div>
+                <div class="avatar avatar-sm" :style="`background:${color(i)}`"
+                  x-text="h.jmeno[0] + h.prijmeni[0]"></div>
+                <div class="top-info">
+                  <div class="top-name" x-text="h.jmeno + ' ' + h.prijmeni"></div>
+                  <div class="text-sm text-muted" x-text="h.kategorie"></div>
+                </div>
+                <div class="top-stat">
+                  <span class="font-bold text-success" x-text="h._g + 'G'"></span>
+                  <span class="text-sm text-muted" x-text="h._a + 'A'"></span>
+                </div>
+              </div>
+            </template>
+            <div x-show="topStrelci.length === 0" class="empty-state">Zatím žádné statistiky</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Rychlé akce -->
+      <div class="section-header">
+        <h2 class="section-title">⚡ Rychlé akce</h2>
+      </div>
+      <div class="quick-actions">
+        <a href="/players/new"   class="qa"><span class="qa-icon">👤</span>Přidat hráče</a>
+        <a href="/testy/new"     class="qa"><span class="qa-icon">📋</span>Zadat testy</a>
+        <a href="/dochazka/new"  class="qa"><span class="qa-icon">📅</span>Zapsat docházku</a>
+        <a href="/zapasy/new"    class="qa"><span class="qa-icon">🏒</span>Přidat zápas</a>
+        <a href="/hodnoceni/new" class="qa"><span class="qa-icon">⭐</span>Hodnotit hráče</a>
+      </div>
+
     </div>
   </div>
+
   <script>
-			// Auth guard – nepřihlášený uživatel je přesměrován na /login
-			if (!localStorage.getItem('auth')) {
-				window.location.href = '/login';
-			}
-
-			document.getElementById('logout')?.addEventListener('click', () => {
-				localStorage.removeItem('auth');
-				window.location.href = '/login';
-			});
-		</script>
+    const KAT = ['U8-U10','U11-U12','U13-U14','U15-U16','U17-U20'];
+    const COLORS = ['#1a56db','#7c3aed','#dc2626','#16a34a','#d97706'];
+    function dashboard() {
+      return {
+        trener: null, hraci: [], zapasy: [], testy: [], loading: true,
+        async init() {
+          try { this.trener = JSON.parse(localStorage.getItem('trener_session') || 'null'); } catch {}
+          const [h, z, t] = await Promise.all([
+            fetch('/api/hraci').then(r => r.json()),
+            fetch('/api/zapasy').then(r => r.json()),
+            fetch('/api/testy').then(r => r.json()),
+          ]);
+          this.hraci = h; this.zapasy = z; this.testy = t;
+          this.loading = false;
+        },
+        get stats() {
+          return {
+            hracu: this.hraci.filter(h => h.aktivni).length,
+            kategorii: new Set(this.hraci.map(h => h.kategorie)).size,
+            zapasu: this.zapasy.length,
+            testu: this.testy.length,
+          };
+        },
+        get kategorieStats() {
+          return KAT.map(k => {
+            const hk = this.hraci.filter(h => h.kategorie === k && h.aktivni);
+            return { nazev: k, pocet: hk.length,
+              u: hk.filter(h => h.pozice === 'Útočník').length,
+              o: hk.filter(h => h.pozice === 'Obránce').length,
+              b: hk.filter(h => h.pozice === 'Brankář').length,
+            };
+          }).filter(k => k.pocet > 0);
+        },
+        get posledniZapasy() {
+          return [...this.zapasy].sort((a,b) => b.datum.localeCompare(a.datum)).slice(0, 5);
+        },
+        get topStrelci() {
+          const map = {};
+          for (const z of this.zapasy)
+            for (const s of z.stats) {
+              if (!map[s.hrac_id]) map[s.hrac_id] = { g: 0, a: 0 };
+              map[s.hrac_id].g += s.goly;
+              map[s.hrac_id].a += s.asistence;
+            }
+          return this.hraci
+            .map(h => ({ ...h, _g: map[h.id]?.g ?? 0, _a: map[h.id]?.a ?? 0 }))
+            .filter(h => h._g > 0)
+            .sort((a,b) => b._g - a._g || b._a - a._a)
+            .slice(0, 5);
+        },
+        color(i) { return COLORS[i % COLORS.length]; },
+        fmtDate(d) { return new Date(d).toLocaleDateString('cs-CZ', { day:'numeric', month:'short' }); },
+      };
+    }
+  </script>
 </MainLayout>
-		
-

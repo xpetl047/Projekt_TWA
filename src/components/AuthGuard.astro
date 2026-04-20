@@ -1,11 +1,11 @@
 ---
-// Komponenta bez HTML výstupu — jen přidá auth guard script na stránku.
-// Použití: <AuthGuard /> kdekoli v <body> chráněné stránky.
+// src/components/AuthGuard.astro
 ---
-
 <script>
-  // Pokud uživatel není přihlášen, přesměruj na login
-  if (!localStorage.getItem('auth')) {
-    window.location.href = '/login';
-  }
+  (() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('trener_session') || 'null');
+      if (!s?.id) window.location.replace('/login');
+    } catch { window.location.replace('/login'); }
+  })();
 </script>

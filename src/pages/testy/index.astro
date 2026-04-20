@@ -1,0 +1,68 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import AuthGuard from '../../components/AuthGuard.astro';
+---
+<MainLayout title="Testy | HC Mládež" activeNav="testy">
+  <AuthGuard />
+  <div x-data="testyList()" x-init="init()">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Fyzické & bruslařské testy</h1>
+        <p class="page-sub" x-text="`${testy.length} testů celkem`"></p>
+      </div>
+      <div class="page-actions">
+        <select class="input" style="width:auto" x-model="filterKat">
+          <option value="">Všechny kategorie</option>
+          <option>U8-U10</option><option>U11-U12</option><option>U13-U14</option><option>U15-U16</option><option>U17-U20</option>
+        </select>
+        <a href="/testy/new" class="btn btn-primary">+ Zadat testy</a>
+      </div>
+    </div>
+    <div x-show="loading" class="loading-state"><div class="spinner"></div><p>Načítám...</p></div>
+    <div x-show="!loading" class="card" style="padding:0">
+      <table class="table">
+        <thead><tr><th>Hráč</th><th>Kat.</th><th>Datum</th><th>Sprint 30m</th><th>Skok</th><th>Kliky</th><th>Beep</th><th>Brusle sprint</th><th>Brusle obr.</th><th>Trenér</th></tr></thead>
+        <tbody>
+          <template x-for="t in filtered" :key="t.id">
+            <tr @click="window.location.href=`/players/${t.hrac_id}`">
+              <td>
+                <div class="name-cell">
+                  <div class="avatar avatar-sm" style="background:#0f1e35" x-text="initials(t.hrac_id)"></div>
+                  <span x-text="jmeno(t.hrac_id)"></span>
+                </div>
+              </td>
+              <td><span class="badge badge-kat" x-text="kat(t.hrac_id)"></span></td>
+              <td class="text-sm" x-text="fmtDate(t.datum)"></td>
+              <td class="font-bold" x-text="t.sprint_30m?t.sprint_30m+'s':'—'"></td>
+              <td x-text="t.skok_dalka?t.skok_dalka+' cm':'—'"></td>
+              <td x-text="t.kliky?t.kliky+'×':'—'"></td>
+              <td class="font-bold" x-text="t.beep_test??'—'"></td>
+              <td class="font-bold" x-text="t.brusle_sprint?t.brusle_sprint+'s':'—'"></td>
+              <td x-text="t.brusle_obratky?t.brusle_obratky+'s':'—'"></td>
+              <td class="text-sm text-muted" x-text="t.trener"></td>
+            </tr>
+          </template>
+          <tr x-show="filtered.length===0&&!loading">
+            <td colspan="10" class="empty-state">Žádné testy. <a href="/testy/new">Přidat →</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    function testyList() {
+      return {
+        hraci:[], testy:[], loading:true, filterKat:'',
+        async init() {
+          const [h,t]=await Promise.all([fetch('/api/hraci').then(r=>r.json()),fetch('/api/testy').then(r=>r.json())]);
+          this.hraci=h; this.testy=t.sort((a,b)=>b.datum.localeCompare(a.datum)); this.loading=false;
+        },
+        get filtered(){return this.filterKat?this.testy.filter(t=>this.kat(t.hrac_id)===this.filterKat):this.testy;},
+        jmeno(id){const h=this.hraci.find(h=>h.id===id);return h?h.prijmeni+' '+h.jmeno:id;},
+        kat(id){return this.hraci.find(h=>h.id===id)?.kategorie??'';},
+        initials(id){const h=this.hraci.find(h=>h.id===id);return h?h.jmeno[0]+h.prijmeni[0]:'?';},
+        fmtDate(d){return new Date(d).toLocaleDateString('cs-CZ');},
+      };
+    }
+  </script>
+</MainLayout>

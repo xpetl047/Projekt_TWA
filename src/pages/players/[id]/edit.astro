@@ -1,146 +1,88 @@
 ---
 export const prerender = false;
-
+import MainLayout from '../../../layouts/MainLayout.astro';
 import AuthGuard from '../../../components/AuthGuard.astro';
-import '../../../styles/app.css';
-import '@sg-styles/tokens.css';
-import '@sg-styles/typography.css';
-import '@sg-styles/components.css';
-
-
+import { getHrac } from '../../../lib/db';
 const { id } = Astro.params;
-
+const hrac = await getHrac(id!);
+if (!hrac) return Astro.redirect('/players');
 ---
+<MainLayout title={`Upravit ${hrac.jmeno} ${hrac.prijmeni}`} activeNav="players">
+  <AuthGuard />
+  <nav class="breadcrumb"><a href={`/players/${hrac.id}`}>← Zpět na profil</a></nav>
 
-<html lang="cs">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Upravit hráče</title>
-  </head>
-  <body>
-    <AuthGuard />
+  <div class="card" x-data={`editHrac(${JSON.stringify(hrac)})`} style="max-width:80rem">
+    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Upravit hráče</h2>
+    <p class="alert alert-error"   x-show="error"   x-text="error" style="margin-bottom:1.6rem"></p>
+    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Uloženo!</p>
 
-    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
-      <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Upravit hráče</h1>
-
-            <div class="card" x-data="playerEdit()" x-init={`loadPlayer('${id}')`}>
-        <!-- Loading state -->
-        <div x-show="loading" style="padding: 2.4rem; text-align: center; color: #9ca3af;">
-          Načítání hráče...
-        </div>
-
-        <!-- Error state -->
-        <div x-show="error" style="padding: 2.4rem; text-align: center; color: #b91c1c;">
-          <p x-text="error"></p>
-          <a href="/players" style="margin-top: 1.2rem; display: inline-block;">← Zpět na seznam</a>
-        </div>
-
-        <!-- Edit form -->
- 
-        <form
-           x-show="!loading && !error && player"
-          @submit.prevent="savePlayer"
-        >
-          <div class="form-group">
-            <label for="name">Jméno</label>
-            <input class="input" type="text" id="name" name="name" x-model="player.name" required />
-          </div>
-
-          <div class="form-group">
-            <label for="description">Popis</label>
-            <textarea class="input" id="description" name="description" rows="4" style="resize: vertical;" x-model="player.description"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="status">Status</label>
-            <select class="input" id="status" name="status" x-model="player.status">
-              <option value="active" :selected="player.status === 'active'">active</option>
-              <option value="inactive" :selected="player.status === 'inactive'">inactive</option>             
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="role">Role</label>
-            <select class="input" id="role" name="role" x-model="player.role">
-              <option value="C" :selected="player.role === 'C'">C</option>
-              <option value="LW" :selected="player.role === 'LW'">LW</option>
-              <option value="RW" :selected="player.role === 'RW'">RW</option>
-              <option value="D" :selected="player.role === 'D'">D</option>
-              <option value="G" :selected="player.role === 'G'">G</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="assignee">Přiřazeno</label>
-            <input class="input" type="text" id="assignee" name="assignee" x-model="player.assignee" />
-          </div>
-
-          <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
-             <button type="submit" class="btn btn-primary" :disabled="saving">
-              <span x-show="!saving">Uložit</span>
-              <span x-show="saving">Ukládání...</span>
-            </button>
-            <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">Zrušit</a>
-          </div>
-        </form>
+    <div class="form-section">Základní informace</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Křestní jméno *</label>
+        <input class="input" type="text" x-model="f.jmeno" />
+      </div>
+      <div class="form-group">
+        <label>Příjmení *</label>
+        <input class="input" type="text" x-model="f.prijmeni" />
+      </div>
+      <div class="form-group">
+        <label>Číslo dresu</label>
+        <input class="input" type="number" x-model="f.cislo" min="1" max="99" />
+      </div>
+      <div class="form-group">
+        <label>Kategorie</label>
+        <select class="input" x-model="f.kategorie">
+          <option>U8-U10</option><option>U11-U12</option><option>U13-U14</option>
+          <option>U15-U16</option><option>U17-U20</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pozice</label>
+        <select class="input" x-model="f.pozice">
+          <option>Útočník</option><option>Obránce</option><option>Brankář</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Datum narození</label>
+        <input class="input" type="date" x-model="f.narozeni" />
+      </div>
+      <div class="form-group">
+        <label>Hokejka</label>
+        <select class="input" x-model="f.ruka">
+          <option>Levá</option><option>Pravá</option>
+        </select>
+      </div>
+      <div class="form-group col-full">
+        <label>Kontakt na rodiče</label>
+        <input class="input" type="text" x-model="f.rodic_kontakt" />
       </div>
     </div>
-     <script is:inline define:vars={{ playerId: id }}>
-      window.playerEdit = function() {
-        return {
-          player: null,
-          loading: true,
-          saving: false,
-          error: null,
 
-          async loadPlayer(id) {
-            try {
-              this.loading = true;
-              this.error = null;
-              const response = await fetch(`/api/players/${id}`);
-              
-              if (!response.ok) {
-                if (response.status === 404) {
-                  throw new Error('Hráč nenalezen');
-                }
-                throw new Error('Nepodařilo se načíst hráče');
-              }
-              
-              this.player = await response.json();
-            } catch (err) {
-              this.error = err.message;
-            } finally {
-              this.loading = false;
-            }
-          },
+    <div class="form-actions">
+      <a href={`/players/${hrac.id}`} class="btn btn-secondary">Zrušit</a>
+      <button class="btn btn-primary" :disabled="saving" @click="save()">
+        <span x-show="!saving">Uložit změny</span>
+        <span x-show="saving">Ukládám...</span>
+      </button>
+    </div>
+  </div>
 
-          async savePlayer(event) {
-            if (this.saving) return;
-
-            try {
-              this.saving = true;
-              const formData = new FormData(event.target);
-              
-              const response = await fetch(`/api/players/${playerId}`, {
-                method: 'PUT',
-                body: formData
-              });
-
-              if (!response.ok) {
-                throw new Error('Nepodařilo se uložit hráče');
-              }
-
-              await response.json(); // parsuj odpověď
-              window.location.href = '/players';
-            } catch (err) {
-              alert('Chyba při ukládání: ' + err.message);
-            } finally {
-              this.saving = false;
-            }
-          }
-        };
+  <script>
+    function editHrac(initial) {
+      return {
+        f: {...initial}, saving:false, success:false, error:'',
+        async save() {
+          this.saving=true; this.error=''; this.success=false;
+          try {
+            const res=await fetch(`/api/hraci/${initial.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(this.f)});
+            if(!res.ok)throw new Error('Chyba');
+            this.success=true;
+            setTimeout(()=>window.location.href=`/players/${initial.id}`,1000);
+          }catch(e){this.error=e.message;}
+          finally{this.saving=false;}
+        }
       };
-    </script>
-  </body>
-</html>
+    }
+  </script>
+</MainLayout>

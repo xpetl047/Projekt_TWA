@@ -1,0 +1,56 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import AuthGuard from '../../components/AuthGuard.astro';
+---
+<MainLayout title="Zápasy | HC Mládež" activeNav="zapasy">
+  <AuthGuard />
+  <div x-data="zapasyList()" x-init="init()">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Zápasy sezóny</h1>
+        <p class="page-sub" x-text="`${zapasy.length} zápasů`"></p>
+      </div>
+      <div class="page-actions">
+        <a href="/zapasy/new" class="btn btn-primary">+ Přidat zápas</a>
+      </div>
+    </div>
+    <div x-show="loading" class="loading-state"><div class="spinner"></div><p>Načítám...</p></div>
+    <div x-show="!loading" class="card" style="padding:0">
+      <table class="table">
+        <thead><tr><th>Datum</th><th>Kategorie</th><th>Soupeř</th><th>Místo</th><th>Výsledek</th><th>Trenér</th><th>Poznámka</th></tr></thead>
+        <tbody>
+          <template x-for="z in zapasy" :key="z.id">
+            <tr>
+              <td class="text-sm" x-text="fmtDate(z.datum)"></td>
+              <td><span class="badge badge-kat" x-text="z.kategorie"></span></td>
+              <td x-text="z.souper"></td>
+              <td class="text-sm text-muted" x-text="z.domaci ? '🏠 Domácí' : '✈️ Hosté'"></td>
+              <td>
+                <span class="badge font-bold"
+                  :class="z.skore_my>z.skore_souper?'badge-closed':z.skore_my<z.skore_souper?'badge-high':'badge-low'"
+                  x-text="`${z.skore_my} : ${z.skore_souper}`"></span>
+              </td>
+              <td class="text-sm text-muted" x-text="z.trener"></td>
+              <td class="text-sm text-muted" x-text="z.poznamka??''"></td>
+            </tr>
+          </template>
+          <tr x-show="zapasy.length===0&&!loading">
+            <td colspan="7" class="empty-state">Zatím žádné zápasy. <a href="/zapasy/new">Přidat →</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    function zapasyList() {
+      return {
+        zapasy:[], loading:true,
+        async init() {
+          this.zapasy = (await fetch('/api/zapasy').then(r=>r.json())).sort((a,b)=>b.datum.localeCompare(a.datum));
+          this.loading=false;
+        },
+        fmtDate(d) { return new Date(d).toLocaleDateString('cs-CZ'); },
+      };
+    }
+  </script>
+</MainLayout>

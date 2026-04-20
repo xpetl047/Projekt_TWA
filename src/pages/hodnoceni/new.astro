@@ -1,0 +1,61 @@
+---
+export const prerender = false;
+import MainLayout from '../../layouts/MainLayout.astro';
+import AuthGuard from '../../components/AuthGuard.astro';
+import { getHraci } from '../../lib/db';
+const hraci = (await getHraci()).filter(h=>h.aktivni);
+const preselect = Astro.url.searchParams.get('hrac') ?? '';
+---
+<MainLayout title="Hodnotit hráče | HC Mládež" activeNav="players">
+  <AuthGuard />
+  <nav class="breadcrumb"><a href="/players">← Zpět</a></nav>
+  <div class="card" x-data="newHodnoceni()" style="max-width:80rem">
+    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Hodnocení hráče</h2>
+    <p class="alert alert-error"   x-show="error"   x-text="error" style="margin-bottom:1.6rem"></p>
+    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Hodnocení uloženo!</p>
+    <div class="form-grid form-grid-2">
+      <div class="form-group">
+        <label>Hráč *</label>
+        <select class="input" x-model="f.hrac_id">
+          {hraci.map(h=><option value={h.id} selected={h.id===preselect}>{h.prijmeni} {h.jmeno} ({h.kategorie})</option>)}
+        </select>
+      </div>
+      <div class="form-group"><label>Datum *</label><input class="input" type="date" x-model="f.datum" /></div>
+    </div>
+    <div class="form-section">Hodnocení 1–5</div>
+    <div class="form-grid form-grid-3">
+      <div class="form-group"><label>Technika</label><input class="input" type="number" min="1" max="5" x-model="f.technika" placeholder="1–5" /></div>
+      <div class="form-group"><label>Bruslení</label><input class="input" type="number" min="1" max="5" x-model="f.brusleni" placeholder="1–5" /></div>
+      <div class="form-group"><label>Hra bez puku</label><input class="input" type="number" min="1" max="5" x-model="f.hra_bez_puku" placeholder="1–5" /></div>
+      <div class="form-group"><label>Postoj / bojovnost</label><input class="input" type="number" min="1" max="5" x-model="f.postoj" placeholder="1–5" /></div>
+      <div class="form-group"><label>Týmová práce</label><input class="input" type="number" min="1" max="5" x-model="f.tymy_prace" placeholder="1–5" /></div>
+      <div class="form-group"><label>Celkové *</label><input class="input" type="number" min="1" max="5" x-model="f.celkove" placeholder="1–5" /></div>
+    </div>
+    <div class="form-section">Slovní hodnocení</div>
+    <div class="form-group"><label>✅ Silné stránky</label><textarea class="input" rows="2" x-model="f.silne_stranky" style="resize:vertical" placeholder="Co hráč dělá dobře..."></textarea></div>
+    <div class="form-group"><label>📈 Oblasti zlepšení</label><textarea class="input" rows="2" x-model="f.oblasti_zlepseni" style="resize:vertical" placeholder="Na čem pracovat..."></textarea></div>
+    <div class="form-group"><label>🎯 Cíle</label><textarea class="input" rows="2" x-model="f.cile" style="resize:vertical" placeholder="Konkrétní cíle..."></textarea></div>
+    <div class="form-group"><label>📝 Poznámka</label><textarea class="input" rows="2" x-model="f.poznamka" style="resize:vertical"></textarea></div>
+    <div class="form-actions">
+      <a href="/players" class="btn btn-secondary">Zrušit</a>
+      <button class="btn btn-primary" :disabled="saving" @click="save()">
+        <span x-show="!saving">Uložit hodnocení</span><span x-show="saving">Ukládám...</span>
+      </button>
+    </div>
+  </div>
+  <script>
+    function newHodnoceni() {
+      const tr=()=>{try{return JSON.parse(localStorage.getItem('trener_session')||'null');}catch{return null;}};
+      return {
+        f:{hrac_id:new URLSearchParams(location.search).get('hrac')||'',datum:new Date().toISOString().slice(0,10),trener:tr()?.jmeno||'',technika:null,brusleni:null,hra_bez_puku:null,postoj:null,tymy_prace:null,celkove:null,silne_stranky:'',oblasti_zlepseni:'',cile:'',poznamka:''},
+        saving:false,success:false,error:'',
+        async save(){
+          if(!this.f.hrac_id||!this.f.celkove){this.error='Vyberte hráče a zadejte celkové hodnocení.';return;}
+          this.saving=true;this.error='';this.f.trener=tr()?.jmeno||'';
+          try{const res=await fetch('/api/hodnoceni',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(this.f)});if(!res.ok)throw new Error('Chyba');this.success=true;setTimeout(()=>window.location.href=`/players/${this.f.hrac_id}`,1000);}
+          catch(e){this.error=e.message;}finally{this.saving=false;}
+        }
+      };
+    }
+  </script>
+</MainLayout>

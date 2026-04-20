@@ -1,0 +1,6 @@
+[
+  {"id":"t001","hrac_id":"h001","datum":"2024-10-05","trener":"Petr Novotný","sprint_30m":5.12,"sprint_10m":2.31,"skok_dalka":162,"kliky":18,"brusle_sprint":6.85,"brusle_obratky":18.4,"beep_test":7.2},
+  {"id":"t002","hrac_id":"h001","datum":"2025-02-15","trener":"Petr Novotný","sprint_30m":4.98,"sprint_10m":2.25,"skok_dalka":170,"kliky":22,"brusle_sprint":6.62,"brusle_obratky":17.8,"beep_test":8.0},
+  {"id":"t003","hrac_id":"h010","datum":"2024-10-10","trener":"Jana Horáková","sprint_30m":4.65,"sprint_10m":2.10,"skok_dalka":195,"kliky":32,"brusle_sprint":6.20,"brusle_obratky":16.8,"beep_test":9.5},
+  {"id":"t004","hrac_id":"h010","datum":"2025-03-01","trener":"Jana Horáková","sprint_30m":4.55,"sprint_10m":2.05,"skok_dalka":202,"kliky":35,"brusle_sprint":6.05,"brusle_obratky":16.2,"beep_test":10.2}
+]

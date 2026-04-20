@@ -1,0 +1,97 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import AuthGuard from '../../components/AuthGuard.astro';
+---
+<MainLayout title="Docházka | HC Mládež" activeNav="dochazka">
+  <AuthGuard />
+  <div x-data="dochazkaList()" x-init="init()">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Docházka</h1>
+        <p class="page-sub">Přehled přítomnosti hráčů</p>
+      </div>
+      <div class="page-actions">
+        <a href="/dochazka/new" class="btn btn-primary">+ Zapsat docházku</a>
+      </div>
+    </div>
+    <div x-show="loading" class="loading-state"><div class="spinner"></div><p>Načítám...</p></div>
+    <div x-show="!loading">
+      <div class="row" style="margin-bottom:1.6rem">
+        <div class="col-3"><div class="card metric-card">
+          <div class="metric-val text-success" x-text="avgPct+'%'">—</div>
+          <div class="metric-lbl">Průměr docházky</div>
+        </div></div>
+        <div class="col-3"><div class="card metric-card">
+          <div class="metric-val" x-text="dochazka.length">—</div>
+          <div class="metric-lbl">Akcí celkem</div>
+        </div></div>
+        <div class="col-3"><div class="card metric-card">
+          <div class="metric-val" style="color:#d97706" x-text="omluvenych">—</div>
+          <div class="metric-lbl">Omluvených absencí</div>
+        </div></div>
+        <div class="col-3"><div class="card metric-card">
+          <div class="metric-val text-danger" x-text="neomluvenych">—</div>
+          <div class="metric-lbl">Neomluvených</div>
+        </div></div>
+      </div>
+      <div class="card" style="padding:0">
+        <table class="table">
+          <thead><tr><th>Hráč</th><th>Kategorie</th><th>Přítomen</th><th>Omluven</th><th>Neomluven</th><th>Docházka</th></tr></thead>
+          <tbody>
+            <template x-for="h in hraciStats" :key="h.id">
+              <tr @click="window.location.href=`/players/${h.id}`">
+                <td>
+                  <div class="name-cell">
+                    <div class="avatar avatar-sm" :style="`background:${h.color}`" x-text="h.initials"></div>
+                    <span class="font-bold" x-text="h.jmeno"></span>
+                  </div>
+                </td>
+                <td><span class="badge badge-kat" x-text="h.kategorie"></span></td>
+                <td class="font-bold text-success" x-text="h.pritomen"></td>
+                <td class="text-muted" x-text="h.omluven"></td>
+                <td class="font-bold text-danger" x-text="h.neomluven"></td>
+                <td style="min-width:16rem">
+                  <div style="display:flex;align-items:center;gap:.8rem">
+                    <div class="doch-bar-wrap">
+                      <div class="doch-bar-fill"
+                        :class="h.pct>=80?'doch-good':h.pct>=60?'doch-warn':'doch-bad'"
+                        :style="`width:${h.pct}%`"></div>
+                    </div>
+                    <span class="font-bold text-sm" x-text="h.pct+'%'"></span>
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <tr x-show="hraciStats.length===0&&!loading">
+              <td colspan="6" class="empty-state">Zatím žádné záznamy docházky.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    const COLORS=['#1a56db','#7c3aed','#dc2626','#16a34a','#d97706','#0891b2','#db2777','#065f46','#1e40af','#9d174d','#92400e','#1e3a5f','#4338ca'];
+    function dochazkaList() {
+      return {
+        hraci:[], dochazka:[], loading:true,
+        async init() {
+          const [h,d]=await Promise.all([fetch('/api/hraci').then(r=>r.json()),fetch('/api/dochazka').then(r=>r.json())]);
+          this.hraci=h; this.dochazka=d; this.loading=false;
+        },
+        get hraciStats() {
+          return this.hraci.filter(h=>h.aktivni).map((h,i)=>{
+            const z=this.dochazka.flatMap(d=>d.zaznam.filter(z=>z.hrac_id===h.id));
+            const p=z.filter(z=>z.stav==='pritomen').length;
+            const o=z.filter(z=>z.stav==='omluven').length;
+            const n=z.filter(z=>z.stav==='neomluven').length;
+            return {id:h.id,jmeno:h.prijmeni+' '+h.jmeno,kategorie:h.kategorie,initials:h.jmeno[0]+h.prijmeni[0],color:COLORS[i%COLORS.length],pritomen:p,omluven:o,neomluven:n,pct:z.length?Math.round((p/z.length)*100):0};
+          }).filter(h=>h.pritomen+h.omluven+h.neomluven>0).sort((a,b)=>a.pct-b.pct);
+        },
+        get avgPct(){const s=this.hraciStats;return s.length?Math.round(s.reduce((a,h)=>a+h.pct,0)/s.length):0;},
+        get omluvenych(){return this.dochazka.flatMap(d=>d.zaznam).filter(z=>z.stav==='omluven').length;},
+        get neomluvenych(){return this.dochazka.flatMap(d=>d.zaznam).filter(z=>z.stav==='neomluven').length;},
+      };
+    }
+  </script>
+</MainLayout>

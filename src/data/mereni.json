@@ -1,0 +1,7 @@
+[
+  {"id":"m001","hrac_id":"h001","datum":"2024-09-15","vyska_cm":158,"vaha_kg":48.5,"trener":"Petr Novotný"},
+  {"id":"m002","hrac_id":"h001","datum":"2024-12-10","vyska_cm":160,"vaha_kg":50.0,"trener":"Petr Novotný"},
+  {"id":"m003","hrac_id":"h001","datum":"2025-03-08","vyska_cm":161,"vaha_kg":51.2,"trener":"Petr Novotný"},
+  {"id":"m004","hrac_id":"h010","datum":"2024-09-20","vyska_cm":172,"vaha_kg":64.0,"trener":"Jana Horáková"},
+  {"id":"m005","hrac_id":"h010","datum":"2025-03-15","vyska_cm":174,"vaha_kg":65.5,"trener":"Jana Horáková"}
+]

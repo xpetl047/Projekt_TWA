@@ -1,0 +1,308 @@
+---
+export const prerender = false;
+import MainLayout from '../../layouts/MainLayout.astro';
+import AuthGuard from '../../components/AuthGuard.astro';
+import { getHrac, getMereniHrace, getTestyHrace, getDochazkaHrace, getHodnoceniHrace, getStatHrace } from '../../lib/db';
+
+const { id } = Astro.params;
+const [hrac, mereni, testy, dochazka, hodnoceni, zapasStats] = await Promise.all([
+  getHrac(id!),
+  getMereniHrace(id!),
+  getTestyHrace(id!),
+  getDochazkaHrace(id!),
+  getHodnoceniHrace(id!),
+  getStatHrace(id!),
+]);
+if (!hrac) return Astro.redirect('/players');
+
+const vek         = new Date().getFullYear() - new Date(hrac.narozeni).getFullYear();
+const narozeniCZ  = new Date(hrac.narozeni).toLocaleDateString('cs-CZ');
+const celkemGoly  = zapasStats.reduce((a,z)=>a+z.stat.goly,0);
+const celkemAsis  = zapasStats.reduce((a,z)=>a+z.stat.asistence,0);
+const posledniMer = mereni.at(-1);
+const posledniHod = hodnoceni[0];
+const lastTest    = testy.at(-1);
+const firstTest   = testy[0];
+const dochTotal   = dochazka.length;
+const dochPrit    = dochazka.filter(d=>d.stav==='pritomen').length;
+const dochPct     = dochTotal ? Math.round((dochPrit/dochTotal)*100) : null;
+const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==='Obránce' ? 'badge-obrance' : 'badge-brankar';
+---
+<MainLayout title={`${hrac.jmeno} ${hrac.prijmeni} | HC Mládež`} activeNav="players">
+  <AuthGuard />
+  <nav class="breadcrumb"><a href="/players">← Zpět na soupisku</a></nav>
+
+  <!-- Hero -->
+  <div class="card player-hero">
+    <div class="avatar avatar-lg" style="background:#0f1e35">
+      {hrac.jmeno[0]}{hrac.prijmeni[0]}
+    </div>
+    <div class="hero-right">
+      <h1 class="hero-name">{hrac.jmeno} {hrac.prijmeni}</h1>
+      <div class="hero-meta">
+        <span class={`badge ${pozBadge}`}>{hrac.pozice}</span>
+        <span class="badge badge-kat">{hrac.kategorie}</span>
+        <span class="hero-jersey">#{hrac.cislo}</span>
+        <span class="text-muted">{vek} let · {narozeniCZ} · {hrac.ruka} ruka</span>
+      </div>
+      <div class="hero-actions">
+        <a href={`/players/${hrac.id}/edit`}        class="btn btn-secondary btn-sm">✏️ Upravit</a>
+        <a href={`/testy/new?hrac=${hrac.id}`}      class="btn btn-secondary btn-sm">📋 Zadat test</a>
+        <a href={`/hodnoceni/new?hrac=${hrac.id}`}  class="btn btn-secondary btn-sm">⭐ Hodnotit</a>
+        <a href={`/mereni/new?hrac=${hrac.id}`}     class="btn btn-secondary btn-sm">📏 Měření</a>
+        <button class="btn btn-danger btn-sm" x-data
+          @click={`if(confirm('Smazat hráče ${hrac.jmeno} ${hrac.prijmeni}?')){fetch('/api/hraci/${hrac.id}',{method:'DELETE'}).then(()=>window.location.href='/players')}`}>
+          🗑 Smazat
+        </button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-item"><span class="qs-val text-success">{celkemGoly}</span><span class="qs-lbl">Góly</span></div>
+        <div class="qs-item"><span class="qs-val">{celkemAsis}</span><span class="qs-lbl">Asistence</span></div>
+        <div class="qs-item"><span class="qs-val text-primary">{celkemGoly+celkemAsis}</span><span class="qs-lbl">Body</span></div>
+        {posledniMer && <>
+          <div class="qs-item"><span class="qs-val">{posledniMer.vyska_cm} cm</span><span class="qs-lbl">Výška</span></div>
+          <div class="qs-item"><span class="qs-val">{posledniMer.vaha_kg} kg</span><span class="qs-lbl">Váha</span></div>
+        </>}
+        {dochPct !== null &&
+          <div class="qs-item">
+            <span class={`qs-val ${dochPct>=80?'text-success':dochPct<60?'text-danger':''}`}>{dochPct}%</span>
+            <span class="qs-lbl">Docházka</span>
+          </div>
+        }
+        {posledniHod &&
+          <div class="qs-item">
+            <span class="qs-val" style="color:#f59e0b">{'★'.repeat(posledniHod.celkove)}</span>
+            <span class="qs-lbl">Hodnocení</span>
+          </div>
+        }
+        <div class="qs-item"><span class="qs-val">{testy.length}</span><span class="qs-lbl">Testy</span></div>
+      </div>
+      {hrac.rodic_kontakt && <p class="text-sm text-muted">📞 {hrac.rodic_kontakt}</p>}
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div x-data="{ tab: 'statistiky' }">
+    <div class="tabs">
+      <button class="tab-btn" :class="tab==='statistiky'&&'active'" @click="tab='statistiky'">🏆 Zápasy ({zapasStats.length})</button>
+      <button class="tab-btn" :class="tab==='testy'&&'active'"      @click="tab='testy'">💪 Testy ({testy.length})</button>
+      <button class="tab-btn" :class="tab==='mereni'&&'active'"     @click="tab='mereni'">📏 Tělo ({mereni.length})</button>
+      <button class="tab-btn" :class="tab==='dochazka'&&'active'"   @click="tab='dochazka'">📅 Docházka ({dochazka.length})</button>
+      <button class="tab-btn" :class="tab==='hodnoceni'&&'active'"  @click="tab='hodnoceni'">⭐ Hodnocení ({hodnoceni.length})</button>
+    </div>
+
+    <!-- Zápasy -->
+    <div x-show="tab==='statistiky'">
+      {zapasStats.length > 0 ? (
+        <div class="card" style="padding:0">
+          <table class="table">
+            <thead><tr><th>Datum</th><th>Soupeř</th><th>Výsledek</th><th>G</th><th>A</th><th>B</th><th>+/−</th><th>TM</th></tr></thead>
+            <tbody>
+              {zapasStats.map(({zapas:z, stat:s}) => (
+                <tr>
+                  <td class="text-sm text-muted">{new Date(z.datum).toLocaleDateString('cs-CZ')}</td>
+                  <td>
+                    {!z.domaci && '@ '}{z.souper}
+                    <span class={`badge ${z.skore_my>z.skore_souper?'badge-closed':z.skore_my<z.skore_souper?'badge-high':'badge-low'}`}
+                      style="margin-left:.6rem">{z.skore_my}:{z.skore_souper}</span>
+                  </td>
+                  <td></td>
+                  <td class="font-bold text-success">{s.goly}</td>
+                  <td>{s.asistence}</td>
+                  <td class="font-bold text-primary">{s.goly+s.asistence}</td>
+                  <td class={s.plusMinus>=0?'text-success':'text-danger'}>{s.plusMinus>0?'+':''}{s.plusMinus}</td>
+                  <td>{s.trestne}'</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div class="card empty-state">Zatím žádné statistiky. <a href="/zapasy/new">Přidat zápas →</a></div>
+      )}
+    </div>
+
+    <!-- Testy -->
+    <div x-show="tab==='testy'">
+      <div class="section-header" style="margin-top:0">
+        <h3 class="section-title">Historie testů</h3>
+        <a href={`/testy/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat test</a>
+      </div>
+
+      {testy.length >= 2 && lastTest && firstTest && (
+        <div class="card progress-card">
+          <div class="progress-title">📈 Vývoj od prvního testu</div>
+          <div class="progress-grid">
+            {firstTest.sprint_30m && lastTest.sprint_30m && (
+              <div class="progress-item">
+                <span class="progress-label">Sprint 30m</span>
+                <span class="progress-old">{firstTest.sprint_30m}s</span>
+                <span> → </span>
+                <span class="font-bold">{lastTest.sprint_30m}s</span>
+                <span class={lastTest.sprint_30m < firstTest.sprint_30m ? 'diff-good' : 'diff-bad'}>
+                  {lastTest.sprint_30m < firstTest.sprint_30m ? ' ▼' : ' ▲'}{Math.abs(lastTest.sprint_30m - firstTest.sprint_30m).toFixed(2)}s
+                </span>
+              </div>
+            )}
+            {firstTest.brusle_sprint && lastTest.brusle_sprint && (
+              <div class="progress-item">
+                <span class="progress-label">Brusle sprint</span>
+                <span class="progress-old">{firstTest.brusle_sprint}s</span>
+                <span> → </span>
+                <span class="font-bold">{lastTest.brusle_sprint}s</span>
+                <span class={lastTest.brusle_sprint < firstTest.brusle_sprint ? 'diff-good' : 'diff-bad'}>
+                  {lastTest.brusle_sprint < firstTest.brusle_sprint ? ' ▼' : ' ▲'}{Math.abs(lastTest.brusle_sprint - firstTest.brusle_sprint).toFixed(2)}s
+                </span>
+              </div>
+            )}
+            {firstTest.kliky && lastTest.kliky && (
+              <div class="progress-item">
+                <span class="progress-label">Kliky</span>
+                <span class="progress-old">{firstTest.kliky}×</span>
+                <span> → </span>
+                <span class="font-bold">{lastTest.kliky}×</span>
+                <span class={lastTest.kliky > firstTest.kliky ? 'diff-good' : 'diff-bad'}>
+                  {lastTest.kliky > firstTest.kliky ? ' ▲' : ' ▼'}{Math.abs(lastTest.kliky - firstTest.kliky)}×
+                </span>
+              </div>
+            )}
+            {firstTest.beep_test && lastTest.beep_test && (
+              <div class="progress-item">
+                <span class="progress-label">Beep test</span>
+                <span class="progress-old">{firstTest.beep_test}</span>
+                <span> → </span>
+                <span class="font-bold">{lastTest.beep_test}</span>
+                <span class={lastTest.beep_test > firstTest.beep_test ? 'diff-good' : 'diff-bad'}>
+                  {lastTest.beep_test > firstTest.beep_test ? ' ▲' : ' ▼'}{Math.abs(lastTest.beep_test - firstTest.beep_test).toFixed(1)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {testy.length > 0 ? (
+        <div class="card" style="padding:0">
+          <table class="table">
+            <thead><tr><th>Datum</th><th>Trenér</th><th>Sprint 30m</th><th>Skok</th><th>Kliky</th><th>Beep</th><th>Brusle sprint</th><th>Brusle obr.</th><th>Poznámka</th></tr></thead>
+            <tbody>
+              {testy.map(t => (
+                <tr>
+                  <td class="text-sm">{new Date(t.datum).toLocaleDateString('cs-CZ')}</td>
+                  <td class="text-sm text-muted">{t.trener}</td>
+                  <td>{t.sprint_30m ? t.sprint_30m+'s' : '—'}</td>
+                  <td>{t.skok_dalka ? t.skok_dalka+' cm' : '—'}</td>
+                  <td>{t.kliky ? t.kliky+'×' : '—'}</td>
+                  <td class="font-bold">{t.beep_test ?? '—'}</td>
+                  <td>{t.brusle_sprint ? t.brusle_sprint+'s' : '—'}</td>
+                  <td>{t.brusle_obratky ? t.brusle_obratky+'s' : '—'}</td>
+                  <td class="text-sm text-muted">{t.poznamka ?? ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div class="card empty-state">Zatím žádné testy. <a href={`/testy/new?hrac=${hrac.id}`}>Přidat →</a></div>
+      )}
+    </div>
+
+    <!-- Měření -->
+    <div x-show="tab==='mereni'">
+      <div class="section-header" style="margin-top:0">
+        <h3 class="section-title">Tělesný vývoj</h3>
+        <a href={`/mereni/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat měření</a>
+      </div>
+      {mereni.length > 0 ? (
+        <div class="card" style="padding:0">
+          <table class="table">
+            <thead><tr><th>Datum</th><th>Výška</th><th>Váha</th><th>BMI</th><th>Trenér</th><th>Poznámka</th></tr></thead>
+            <tbody>
+              {[...mereni].reverse().map(m => (
+                <tr>
+                  <td>{new Date(m.datum).toLocaleDateString('cs-CZ')}</td>
+                  <td class="font-bold">{m.vyska_cm} cm</td>
+                  <td class="font-bold">{m.vaha_kg} kg</td>
+                  <td>{(m.vaha_kg/((m.vyska_cm/100)**2)).toFixed(1)}</td>
+                  <td class="text-sm text-muted">{m.trener}</td>
+                  <td class="text-sm text-muted">{m.poznamka ?? ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div class="card empty-state">Zatím žádná měření. <a href={`/mereni/new?hrac=${hrac.id}`}>Přidat →</a></div>
+      )}
+    </div>
+
+    <!-- Docházka -->
+    <div x-show="tab==='dochazka'">
+      <div class="section-header" style="margin-top:0">
+        <h3 class="section-title">
+          Docházka
+          {dochPct !== null && <span class={`badge ${dochPct>=80?'badge-closed':dochPct>=60?'badge-in-progress':'badge-high'}`} style="margin-left:.8rem">{dochPct}%</span>}
+        </h3>
+        <a href="/dochazka/new" class="btn btn-primary btn-sm">+ Zapsat</a>
+      </div>
+      {dochazka.length > 0 ? (
+        <div class="card" style="padding:0">
+          <table class="table">
+            <thead><tr><th>Datum</th><th>Typ</th><th>Akce</th><th>Stav</th><th>Poznámka</th></tr></thead>
+            <tbody>
+              {dochazka.map(({zaznam,stav,poznamka}) => (
+                <tr>
+                  <td>{new Date(zaznam.datum).toLocaleDateString('cs-CZ')}</td>
+                  <td class="text-sm">{zaznam.typ==='trenink'?'Trénink':zaznam.typ==='zapas'?'Zápas':'Ostatní'}</td>
+                  <td class="text-sm text-muted">{zaznam.popis ?? ''}</td>
+                  <td>
+                    <span class={`badge ${stav==='pritomen'?'badge-closed':stav==='omluven'?'badge-in-progress':'badge-high'}`}>
+                      {stav==='pritomen'?'✓ Přítomen':stav==='omluven'?'○ Omluven':'✗ Neomluven'}
+                    </span>
+                  </td>
+                  <td class="text-sm text-muted">{poznamka ?? ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div class="card empty-state">Zatím žádné záznamy. <a href="/dochazka/new">Zapsat →</a></div>
+      )}
+    </div>
+
+    <!-- Hodnocení -->
+    <div x-show="tab==='hodnoceni'">
+      <div class="section-header" style="margin-top:0">
+        <h3 class="section-title">Hodnocení trenéra</h3>
+        <a href={`/hodnoceni/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat</a>
+      </div>
+      {hodnoceni.map(h => (
+        <div class="card eval-card">
+          <div class="eval-header">
+            <span class="eval-date">{new Date(h.datum).toLocaleDateString('cs-CZ')}</span>
+            <span class="eval-trainer">Trenér: {h.trener}</span>
+            <span class="eval-stars">{'★'.repeat(h.celkove)}{'☆'.repeat(5-h.celkove)}</span>
+          </div>
+          <div class="radar-list">
+            {([['Technika',h.technika],['Bruslení',h.brusleni],['Hra bez puku',h.hra_bez_puku],['Postoj/bojovnost',h.postoj],['Týmová práce',h.tymy_prace]] as [string,number][]).map(([lbl,val]) => (
+              <div class="radar-item">
+                <span class="radar-label">{lbl}</span>
+                <div class="radar-track"><div class="radar-fill" style={`width:${val*20}%`}></div></div>
+                <span class="radar-val">{val}/5</span>
+              </div>
+            ))}
+          </div>
+          <div class="eval-texts">
+            {h.silne_stranky    && <div class="eval-text"><strong>✅ Silné stránky</strong><p>{h.silne_stranky}</p></div>}
+            {h.oblasti_zlepseni && <div class="eval-text"><strong>📈 Oblasti zlepšení</strong><p>{h.oblasti_zlepseni}</p></div>}
+            {h.cile             && <div class="eval-text full"><strong>🎯 Cíle</strong><p>{h.cile}</p></div>}
+            {h.poznamka         && <div class="eval-text full"><strong>📝 Poznámka</strong><p>{h.poznamka}</p></div>}
+          </div>
+        </div>
+      ))}
+      {hodnoceni.length===0 && <div class="card empty-state">Zatím žádné hodnocení. <a href={`/hodnoceni/new?hrac=${hrac.id}`}>Přidat →</a></div>}
+    </div>
+
+  </div>
+</MainLayout>

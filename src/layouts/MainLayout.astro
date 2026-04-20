@@ -1,19 +1,22 @@
 ---
+// src/layouts/MainLayout.astro
 import '@sg-styles/tokens.css';
 import '@sg-styles/typography.css';
 import '@sg-styles/components.css';
+import '../styles/app.css';
 import Header from '../components/Header.astro';
 
-const { title = "HC Mládež" } = Astro.props;
+interface Props { title?: string; activeNav?: string; }
+const { title = 'HC Mládež', activeNav } = Astro.props;
 ---
 <html lang="cs">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
   </head>
   <body>
-    <Header />
+    <Header activeNav={activeNav} />
     <main class="container">
       <slot />
     </main>

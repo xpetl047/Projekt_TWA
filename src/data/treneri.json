@@ -1,0 +1,5 @@
+[
+  {"id":"tr000","jmeno":"Admin","prijmeni":"","email":"admin@hcklub.cz","password_hash":"admin123","kategorie":["U8-U10","U11-U12","U13-U14","U15-U16","U17-U20"],"role":"admin"},
+  {"id":"tr001","jmeno":"Petr","prijmeni":"Novotný","email":"novotny@hcklub.cz","password_hash":"trener123","kategorie":["U13-U14","U11-U12"],"role":"trener"},
+  {"id":"tr002","jmeno":"Jana","prijmeni":"Horáková","email":"horakova@hcklub.cz","password_hash":"trener123","kategorie":["U15-U16","U17-U20"],"role":"trener"}
+]

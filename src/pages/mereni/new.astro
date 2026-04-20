@@ -1,0 +1,50 @@
+---
+export const prerender = false;
+import MainLayout from '../../layouts/MainLayout.astro';
+import AuthGuard from '../../components/AuthGuard.astro';
+import { getHraci } from '../../lib/db';
+const hraci = (await getHraci()).filter(h=>h.aktivni);
+const preselect = Astro.url.searchParams.get('hrac') ?? '';
+---
+<MainLayout title="Přidat měření | HC Mládež" activeNav="players">
+  <AuthGuard />
+  <nav class="breadcrumb"><a href="/players">← Zpět</a></nav>
+  <div class="card" x-data="newMereni()" style="max-width:60rem">
+    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Přidat tělesné měření</h2>
+    <p class="alert alert-error"   x-show="error"   x-text="error" style="margin-bottom:1.6rem"></p>
+    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Měření uloženo!</p>
+    <div class="form-grid form-grid-2">
+      <div class="form-group">
+        <label>Hráč *</label>
+        <select class="input" x-model="f.hrac_id">
+          {hraci.map(h=><option value={h.id} selected={h.id===preselect}>{h.prijmeni} {h.jmeno} ({h.kategorie})</option>)}
+        </select>
+      </div>
+      <div class="form-group"><label>Datum *</label><input class="input" type="date" x-model="f.datum" /></div>
+      <div class="form-group"><label>Výška (cm) *</label><input class="input" type="number" step="0.1" x-model="f.vyska_cm" placeholder="161" /></div>
+      <div class="form-group"><label>Váha (kg) *</label><input class="input" type="number" step="0.1" x-model="f.vaha_kg" placeholder="51,2" /></div>
+      <div class="form-group col-full"><label>Poznámka</label><textarea class="input" rows="2" x-model="f.poznamka" style="resize:vertical"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <a href="/players" class="btn btn-secondary">Zrušit</a>
+      <button class="btn btn-primary" :disabled="saving" @click="save()">
+        <span x-show="!saving">Uložit měření</span><span x-show="saving">Ukládám...</span>
+      </button>
+    </div>
+  </div>
+  <script>
+    function newMereni() {
+      const tr=()=>{try{return JSON.parse(localStorage.getItem('trener_session')||'null');}catch{return null;}};
+      return {
+        f:{hrac_id:new URLSearchParams(location.search).get('hrac')||'',datum:new Date().toISOString().slice(0,10),trener:tr()?.jmeno||'',vyska_cm:null,vaha_kg:null,poznamka:''},
+        saving:false,success:false,error:'',
+        async save(){
+          if(!this.f.hrac_id||!this.f.vyska_cm||!this.f.vaha_kg){this.error='Vyplňte hráče, výšku a váhu.';return;}
+          this.saving=true;this.error='';this.f.trener=tr()?.jmeno||'';
+          try{const res=await fetch('/api/mereni',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(this.f)});if(!res.ok)throw new Error('Chyba');this.success=true;setTimeout(()=>window.location.href=`/players/${this.f.hrac_id}`,1000);}
+          catch(e){this.error=e.message;}finally{this.saving=false;}
+        }
+      };
+    }
+  </script>
+</MainLayout>

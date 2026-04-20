@@ -1,100 +1,87 @@
 ---
+import MainLayout from '../../layouts/MainLayout.astro';
 import AuthGuard from '../../components/AuthGuard.astro';
-import '../../styles/app.css';
-import '@sg-styles/tokens.css';
-import '@sg-styles/typography.css';
-import '@sg-styles/components.css';
 ---
+<MainLayout title="Přidat hráče | HC Mládež" activeNav="players">
+  <AuthGuard />
+  <nav class="breadcrumb"><a href="/players">← Zpět na soupisku</a></nav>
 
-<html lang="cs">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nový hráč</title>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
-  </head>
-  <body>
-    <AuthGuard />
+  <div class="card" x-data="newHrac()" style="max-width:80rem">
+    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Přidat nového hráče</h2>
+    <p class="alert alert-error" x-show="error" x-text="error" style="margin-bottom:1.6rem"></p>
+    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Hráč přidán! Přesměrovávám...</p>
 
-    <div class="container" style="padding-top: 4rem; padding-bottom: 4rem; max-width: 64rem;">
-      <h1 style="font-size: 2.4rem; margin-bottom: 2.4rem;">Nový hráč</h1>
-
-      <div class="card" x-data="playerCreate()">
-        <form @submit.prevent="createPlayer">
-          <div class="form-group">
-            <label for="name">Název</label>
-            <input class="input" type="text" id="name" name="name" required />
-          </div>
-
-          <div class="form-group">
-            <label for="description">Popis</label>
-            <textarea class="input" id="description" name="description" rows="4" style="resize: vertical;"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="status">Status</label>
-            <select class="input" id="status" name="status">
-              <option value="active">active</option>
-              <option value="inactive">inactive</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="role">Role</label>
-            <select class="input" id="role" name="role">
-              <option value="C">C</option>
-              <option value="LW" selected>LW</option>
-              <option value="RW">RW</option>
-              <option value="D">D</option>
-              <option value="G">G</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="assignee">Přiřazeno</label>
-            <input class="input" type="text" id="assignee" name="assignee" value="admin" />
-          </div>
-
-          <div style="display: flex; gap: 1.2rem; margin-top: 2.4rem;">
-            <button type="submit" class="btn btn-primary" :disabled="saving">
-              <span x-show="!saving">Vytvořit</span>
-              <span x-show="saving">Vytváření...</span>
-            </button>
-            <a href="/players" class="btn" style="background: #e5e7eb; color: #374151;">Zrušit</a>
-          </div>
-        </form>
+    <div class="form-section">Základní informace</div>
+    <div class="form-grid">
+      <div class="form-group col-full">
+        <label>Křestní jméno *</label>
+        <input class="input" type="text" x-model="f.jmeno" placeholder="Tomáš" />
+      </div>
+      <div class="form-group">
+        <label>Příjmení *</label>
+        <input class="input" type="text" x-model="f.prijmeni" placeholder="Novák" />
+      </div>
+      <div class="form-group">
+        <label>Číslo dresu *</label>
+        <input class="input" type="number" x-model="f.cislo" min="1" max="99" />
+      </div>
+      <div class="form-group">
+        <label>Kategorie</label>
+        <select class="input" x-model="f.kategorie">
+          <option>U8-U10</option><option>U11-U12</option>
+          <option selected>U13-U14</option><option>U15-U16</option><option>U17-U20</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pozice</label>
+        <select class="input" x-model="f.pozice">
+          <option>Útočník</option><option>Obránce</option><option>Brankář</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Datum narození</label>
+        <input class="input" type="date" x-model="f.narozeni" />
+      </div>
+      <div class="form-group">
+        <label>Hokejka</label>
+        <select class="input" x-model="f.ruka">
+          <option>Levá</option><option>Pravá</option>
+        </select>
+      </div>
+      <div class="form-group col-full">
+        <label>Kontakt na rodiče</label>
+        <input class="input" type="text" x-model="f.rodic_kontakt" placeholder="Jana Nováková, 777 123 456" />
       </div>
     </div>
-    <script is:inline>
-      window.playerCreate = function() {
-        return {
-          saving: false,
 
-          async createPlayer(event) {
-            if (this.saving) return;
+    <div class="form-actions">
+      <a href="/players" class="btn btn-secondary">Zrušit</a>
+      <button class="btn btn-primary" :disabled="saving" @click="save()">
+        <span x-show="!saving">Přidat hráče</span>
+        <span x-show="saving">Ukládám...</span>
+      </button>
+    </div>
+  </div>
 
-            try {
-              this.saving = true;
-              const formData = new FormData(event.target);
-              
-              const response = await fetch('/api/players', {
-                method: 'POST',
-                body: formData
-              });
-
-              if (response.ok) {
-                window.location.href = '/players';
-              } else {
-                alert('Nepodařilo se vytvořit hráče');
-              }
-            } catch (err) {
-              alert('Chyba při vytváření: ' + err.message);
-            } finally {
-              this.saving = false;
-            }
-          }
-        };
+  <script>
+    function newHrac() {
+      return {
+        f: { jmeno:'', prijmeni:'', cislo:'', kategorie:'U13-U14',
+             pozice:'Útočník', narozeni:'', ruka:'Levá', rodic_kontakt:'', aktivni:true },
+        saving:false, success:false, error:'',
+        async save() {
+          if (!this.f.jmeno||!this.f.prijmeni||!this.f.cislo){this.error='Vyplňte jméno, příjmení a číslo.';return;}
+          this.saving=true; this.error='';
+          try {
+            const res = await fetch('/api/hraci',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(this.f)});
+            if (!res.ok) throw new Error('Chyba');
+            const hrac = await res.json();
+            this.success=true;
+            setTimeout(()=>window.location.href=`/players/${hrac.id}`,1000);
+          } catch(e) { this.error=e.message; }
+          finally { this.saving=false; }
+        }
       };
-    </script>
-  </body>
-</html>
+    }
+  </script>
+</MainLayout>

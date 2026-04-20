@@ -1,27 +1,39 @@
 ---
-const pathname = new URL(Astro.request.url).pathname;
+// src/components/Header.astro
+interface Props { activeNav?: string; }
+const { activeNav } = Astro.props;
 ---
-<header class="container">
-  <div class="card">
-    <div class="row">
-      <div class="col-4">
-        <a href="/">
-          <strong>HC MLÁDEŽ</strong>
-        </a>
-      </div>
-      <div class="col-8">
-        <nav class="row">
-          <div class="col-3">
-            <a href="/">Přehled</a>
-          </div>
-          <div class="col-3">
-            <a href="/players">Hráči</a>
-          </div>
-          <div class="col-3">
-            <span class="badge badge-open">Petr Novotný</span>
-          </div>
-        </nav>
-      </div>
+<header class="app-header">
+  <div class="container">
+    <a href="/" class="header-brand">🏒 HC Mládež</a>
+    <nav class="header-nav">
+      <a href="/"         class={`nav-link ${activeNav === 'home'     ? 'active' : ''}`}>📊 Přehled</a>
+      <a href="/players"  class={`nav-link ${activeNav === 'players'  ? 'active' : ''}`}>👥 Hráči</a>
+      <a href="/zapasy"   class={`nav-link ${activeNav === 'zapasy'   ? 'active' : ''}`}>🏆 Zápasy</a>
+      <a href="/dochazka" class={`nav-link ${activeNav === 'dochazka' ? 'active' : ''}`}>📅 Docházka</a>
+      <a href="/testy"    class={`nav-link ${activeNav === 'testy'    ? 'active' : ''}`}>💪 Testy</a>
+    </nav>
+    <div class="header-user" x-data="headerUser()" x-init="init()">
+      <div class="user-avatar" x-text="initials">?</div>
+      <div class="user-name" x-text="jmeno"></div>
+      <button class="btn-logout" @click="logout()">Odhlásit</button>
     </div>
   </div>
 </header>
+<script>
+  function headerUser() {
+    return {
+      jmeno: '', initials: '?',
+      init() {
+        try {
+          const s = JSON.parse(localStorage.getItem('trener_session') || 'null');
+          if (s?.jmeno) {
+            this.jmeno = s.jmeno;
+            this.initials = (s.jmeno[0] || '') + (s.prijmeni?.[0] || '');
+          }
+        } catch {}
+      },
+      logout() { localStorage.removeItem('trener_session'); window.location.href = '/login'; }
+    };
+  }
+</script>
