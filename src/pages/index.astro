@@ -3,28 +3,52 @@ import '../styles/app.css';
 import '@sg-styles/tokens.css';
 import '@sg-styles/typography.css';
 import '@sg-styles/components.css';
+
+
+
+import MainLayout from '../layouts/MainLayout.astro';
 ---
+<MainLayout title="Dashboard | HC Mládež">
+  <div class="row">
+    <div class="col-12">
+      <h1>Dobrý den, Petře 👋</h1>
+    </div>
+  </div>
 
-<html lang="cs">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>HockeyCoach</title>
-	</head>
-	<body>
-		<div class="container">
-			<h1>Vítej!</h1>
-			<br>
-			<a href="/players" class="btn btn-primary">Správa hráčů</a>
-			<br>
-			<br>
-			<button id="logout">Odhlásit se</button>
-		</div>
+  <div class="row">
+    <div class="col-4">
+      <div class="card">
+        <h2>13</h2>
+        <label>Hráčů celkem</label>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="card">
+        <h2 class="badge-in-progress">5</h2>
+        <label>Aktivních kategorií</label>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="card">
+        <h2>3</h2>
+        <label>Zápasů sezóny</label>
+      </div>
+    </div>
+  </div>
 
-		<script>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <h3>Rychlé akce</h3>
+        <div class="row">
+          <div class="col-3">
+            <a href="/players" class="btn btn-primary">Zobrazit hráče</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
 			// Auth guard – nepřihlášený uživatel je přesměrován na /login
 			if (!localStorage.getItem('auth')) {
 				window.location.href = '/login';
@@ -35,5 +59,6 @@ import '@sg-styles/components.css';
 				window.location.href = '/login';
 			});
 		</script>
-	</body>
-</html>
+</MainLayout>
+		
+
