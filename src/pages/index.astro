@@ -72,7 +72,7 @@ import AuthGuard from '../components/AuthGuard.astro';
             <h2 class="section-title">🏆 Poslední zápasy</h2>
             <a href="/zapasy" class="btn btn-secondary btn-sm">Všechny →</a>
           </div>
-          <div class="card" style="padding:0">
+          <div class="card card-flush">
             <table class="table">
               <thead>
                 <tr><th>Datum</th><th>Kat.</th><th>Soupeř</th><th>Výsledek</th></tr>
@@ -105,7 +105,7 @@ import AuthGuard from '../components/AuthGuard.astro';
             <h2 class="section-title">⭐ Top střelci</h2>
             <a href="/players" class="btn btn-secondary btn-sm">Všichni →</a>
           </div>
-          <div class="card" style="padding:0">
+          <div class="card card-flush">
             <template x-for="(h, i) in topStrelci" :key="h.id">
               <div class="top-row" @click="window.location.href=`/players/${h.id}`">
                 <div class="top-rank" x-text="i + 1"></div>

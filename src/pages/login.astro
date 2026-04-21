@@ -15,7 +15,7 @@ import '../styles/app.css';
     <div class="login-box">
       <div class="card">
         <h1>🏒 HC Mládež</h1>
-        <p class="alert alert-error" x-show="error" x-text="error" style="margin-bottom:1.6rem"></p>
+        <p class="alert alert-error" x-show="error" x-text="error"></p>
         <form @submit.prevent="login()">
           <div class="form-group">
             <label for="email">E-mail</label>
@@ -30,7 +30,7 @@ import '../styles/app.css';
             <span x-show="loading">Přihlašuji...</span>
           </button>
         </form>
-        <p style="margin-top:1.6rem;font-size:1.2rem;color:#9ca3af;text-align:center">
+        <p class="login-demo">
           Demo: admin@hcklub.cz / admin123 · novotny@hcklub.cz / trener123
         </p>
       </div>

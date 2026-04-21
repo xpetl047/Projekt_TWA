@@ -34,7 +34,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
 
   <!-- Hero -->
   <div class="card player-hero">
-    <div class="avatar avatar-lg" style="background:#0f1e35">
+    <div class="avatar avatar-lg" style="background:var(--color-dark)">
       {hrac.jmeno[0]}{hrac.prijmeni[0]}
     </div>
     <div class="hero-right">
@@ -71,7 +71,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
         }
         {posledniHod &&
           <div class="qs-item">
-            <span class="qs-val" style="color:#f59e0b">{'★'.repeat(posledniHod.celkove)}</span>
+            <span class="qs-val" class="text-star">{'★'.repeat(posledniHod.celkove)}</span>
             <span class="qs-lbl">Hodnocení</span>
           </div>
         }
@@ -94,7 +94,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
     <!-- Zápasy -->
     <div x-show="tab==='statistiky'">
       {zapasStats.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card card-flush">
           <table class="table">
             <thead><tr><th>Datum</th><th>Soupeř</th><th>Výsledek</th><th>G</th><th>A</th><th>B</th><th>+/−</th><th>TM</th></tr></thead>
             <tbody>
@@ -104,7 +104,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
                   <td>
                     {!z.domaci && '@ '}{z.souper}
                     <span class={`badge ${z.skore_my>z.skore_souper?'badge-closed':z.skore_my<z.skore_souper?'badge-high':'badge-low'}`}
-                      style="margin-left:.6rem">{z.skore_my}:{z.skore_souper}</span>
+                      {}>{z.skore_my}:{z.skore_souper}</span>
                   </td>
                   <td></td>
                   <td class="font-bold text-success">{s.goly}</td>
@@ -124,7 +124,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
 
     <!-- Testy -->
     <div x-show="tab==='testy'">
-      <div class="section-header" style="margin-top:0">
+      <div class="section-header section-header--flush">
         <h3 class="section-title">Historie testů</h3>
         <a href={`/testy/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat test</a>
       </div>
@@ -182,7 +182,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
       )}
 
       {testy.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card card-flush">
           <table class="table">
             <thead><tr><th>Datum</th><th>Trenér</th><th>Sprint 30m</th><th>Skok</th><th>Kliky</th><th>Beep</th><th>Brusle sprint</th><th>Brusle obr.</th><th>Poznámka</th></tr></thead>
             <tbody>
@@ -209,12 +209,12 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
 
     <!-- Měření -->
     <div x-show="tab==='mereni'">
-      <div class="section-header" style="margin-top:0">
+      <div class="section-header section-header--flush">
         <h3 class="section-title">Tělesný vývoj</h3>
         <a href={`/mereni/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat měření</a>
       </div>
       {mereni.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card card-flush">
           <table class="table">
             <thead><tr><th>Datum</th><th>Výška</th><th>Váha</th><th>BMI</th><th>Trenér</th><th>Poznámka</th></tr></thead>
             <tbody>
@@ -238,15 +238,15 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
 
     <!-- Docházka -->
     <div x-show="tab==='dochazka'">
-      <div class="section-header" style="margin-top:0">
+      <div class="section-header section-header--flush">
         <h3 class="section-title">
           Docházka
-          {dochPct !== null && <span class={`badge ${dochPct>=80?'badge-closed':dochPct>=60?'badge-in-progress':'badge-high'}`} style="margin-left:.8rem">{dochPct}%</span>}
+          {dochPct !== null && <span class={`badge ${dochPct>=80?'badge-closed':dochPct>=60?'badge-in-progress':'badge-high'}`} class="badge-score">{dochPct}%</span>}
         </h3>
         <a href="/dochazka/new" class="btn btn-primary btn-sm">+ Zapsat</a>
       </div>
       {dochazka.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card card-flush">
           <table class="table">
             <thead><tr><th>Datum</th><th>Typ</th><th>Akce</th><th>Stav</th><th>Poznámka</th></tr></thead>
             <tbody>
@@ -273,7 +273,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
 
     <!-- Hodnocení -->
     <div x-show="tab==='hodnoceni'">
-      <div class="section-header" style="margin-top:0">
+      <div class="section-header section-header--flush">
         <h3 class="section-title">Hodnocení trenéra</h3>
         <a href={`/hodnoceni/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat</a>
       </div>

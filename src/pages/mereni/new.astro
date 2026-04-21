@@ -9,10 +9,10 @@ const preselect = Astro.url.searchParams.get('hrac') ?? '';
 <MainLayout title="Přidat měření | HC Mládež" activeNav="players">
   <AuthGuard />
   <nav class="breadcrumb"><a href="/players">← Zpět</a></nav>
-  <div class="card" x-data="newMereni()" style="max-width:60rem">
-    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Přidat tělesné měření</h2>
-    <p class="alert alert-error"   x-show="error"   x-text="error" style="margin-bottom:1.6rem"></p>
-    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Měření uloženo!</p>
+  <div class="card" x-data="newMereni()" class="card-sm">
+    <h2 class="form-title">Přidat tělesné měření</h2>
+    <p class="alert alert-error" x-show="error" x-text="error"></p>
+    <p class="alert alert-success" x-show="success">✅ Měření uloženo!</p>
     <div class="form-grid form-grid-2">
       <div class="form-group">
         <label>Hráč *</label>
@@ -23,7 +23,7 @@ const preselect = Astro.url.searchParams.get('hrac') ?? '';
       <div class="form-group"><label>Datum *</label><input class="input" type="date" x-model="f.datum" /></div>
       <div class="form-group"><label>Výška (cm) *</label><input class="input" type="number" step="0.1" x-model="f.vyska_cm" placeholder="161" /></div>
       <div class="form-group"><label>Váha (kg) *</label><input class="input" type="number" step="0.1" x-model="f.vaha_kg" placeholder="51,2" /></div>
-      <div class="form-group col-full"><label>Poznámka</label><textarea class="input" rows="2" x-model="f.poznamka" style="resize:vertical"></textarea></div>
+      <div class="form-group col-full"><label>Poznámka</label><textarea class="input" rows="2" x-model="f.poznamka"></textarea></div>
     </div>
     <div class="form-actions">
       <a href="/players" class="btn btn-secondary">Zrušit</a>

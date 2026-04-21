@@ -8,10 +8,10 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
 <MainLayout title="Přidat zápas | HC Mládež" activeNav="zapasy">
   <AuthGuard />
   <nav class="breadcrumb"><a href="/zapasy">← Zpět na zápasy</a></nav>
-  <div class="card" x-data="newZapas()" x-init="init()" style="max-width:90rem">
-    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Přidat zápas</h2>
-    <p class="alert alert-error"   x-show="error"   x-text="error" style="margin-bottom:1.6rem"></p>
-    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Zápas uložen!</p>
+  <div class="card" x-data="newZapas()" x-init="init()" class="card-lg">
+    <h2 class="form-title">Přidat zápas</h2>
+    <p class="alert alert-error" x-show="error" x-text="error"></p>
+    <p class="alert alert-success" x-show="success">✅ Zápas uložen!</p>
     <div class="form-grid form-grid-2">
       <div class="form-group"><label>Datum *</label><input class="input" type="date" x-model="f.datum" /></div>
       <div class="form-group"><label>Kategorie *</label><select class="input" x-model="f.kategorie" @change="loadHraci()"><option>U8-U10</option><option>U11-U12</option><option selected>U13-U14</option><option>U15-U16</option><option>U17-U20</option></select></div>
@@ -21,17 +21,17 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
       <div class="form-group"><label>Skóre soupeře</label><input class="input" type="number" x-model="f.skore_souper" min="0" /></div>
       <div class="form-group col-full"><label>Poznámka</label><input class="input" type="text" x-model="f.poznamka" /></div>
     </div>
-    <div style="font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;border-bottom:.1rem solid #e4e4e4;padding-bottom:.8rem;margin:2rem 0 1.4rem">Statistiky hráčů</div>
-    <table class="table" style="margin-bottom:1.6rem">
+    <div class="form-section">Statistiky hráčů</div>
+    <table class="table">
       <thead><tr><th>Hráč</th><th style="width:7rem">G</th><th style="width:7rem">A</th><th style="width:7rem">+/−</th><th style="width:7rem">TM</th></tr></thead>
       <tbody>
         <template x-for="s in stats" :key="s.hrac_id">
           <tr>
             <td x-text="s.jmeno"></td>
-            <td><input class="input" type="number" min="0" x-model="s.goly"      style="padding:.4rem;text-align:center" /></td>
-            <td><input class="input" type="number" min="0" x-model="s.asistence" style="padding:.4rem;text-align:center" /></td>
-            <td><input class="input" type="number"         x-model="s.plusMinus" style="padding:.4rem;text-align:center" /></td>
-            <td><input class="input" type="number" min="0" x-model="s.trestne"   style="padding:.4rem;text-align:center" /></td>
+            <td><input class="input" type="number" min="0" x-model="s.goly"      class="input-cell" /></td>
+            <td><input class="input" type="number" min="0" x-model="s.asistence" class="input-cell" /></td>
+            <td><input class="input" type="number"         x-model="s.plusMinus" class="input-cell" /></td>
+            <td><input class="input" type="number" min="0" x-model="s.trestne"   class="input-cell" /></td>
           </tr>
         </template>
         <tr x-show="stats.length===0"><td colspan="5" class="empty-state">Vyberte kategorii výše.</td></tr>
