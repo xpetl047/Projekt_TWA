@@ -52,7 +52,7 @@ import AuthGuard from '../../components/AuthGuard.astro';
       <div class="spinner"></div><p>Načítám hráče...</p>
     </div>
 
-    <div x-show="!loading" class="card" style="padding:0">
+    <div x-show="!loading" class="card card-flush">
       <table class="table">
         <thead>
           <tr>
@@ -87,7 +87,7 @@ import AuthGuard from '../../components/AuthGuard.astro';
               <td>
                 <span class="badge" :class="testyH(h.id) > 0 ? 'badge-closed' : 'badge-low'" x-text="testyH(h.id)"></span>
               </td>
-              <td style="color:#f59e0b" x-text="hodH(h.id) ? '★'.repeat(hodH(h.id)) : '—'"></td>
+              <td class="text-star" x-text="hodH(h.id) ? '★'.repeat(hodH(h.id)) : '—'"></td>
               <td @click.stop>
                 <div class="row-actions">
                   <a :href="`/players/${h.id}`"      class="btn btn-secondary btn-xs">Detail</a>
@@ -103,7 +103,7 @@ import AuthGuard from '../../components/AuthGuard.astro';
       </table>
     </div>
 
-    <p x-show="!loading" class="text-sm text-muted" style="margin-top:.8rem"
+    <p x-show="!loading" class="text-sm text-muted" 
       x-text="`Zobrazeno ${filtered.length} z ${hraci.length} hráčů`"></p>
   </div>
 

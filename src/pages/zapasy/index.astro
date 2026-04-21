@@ -15,7 +15,7 @@ import AuthGuard from '../../components/AuthGuard.astro';
       </div>
     </div>
     <div x-show="loading" class="loading-state"><div class="spinner"></div><p>Načítám...</p></div>
-    <div x-show="!loading" class="card" style="padding:0">
+    <div x-show="!loading" class="card card-flush">
       <table class="table">
         <thead><tr><th>Datum</th><th>Kategorie</th><th>Soupeř</th><th>Místo</th><th>Výsledek</th><th>Trenér</th><th>Poznámka</th></tr></thead>
         <tbody>

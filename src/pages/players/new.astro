@@ -6,10 +6,10 @@ import AuthGuard from '../../components/AuthGuard.astro';
   <AuthGuard />
   <nav class="breadcrumb"><a href="/players">← Zpět na soupisku</a></nav>
 
-  <div class="card" x-data="newHrac()" style="max-width:80rem">
-    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Přidat nového hráče</h2>
-    <p class="alert alert-error" x-show="error" x-text="error" style="margin-bottom:1.6rem"></p>
-    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Hráč přidán! Přesměrovávám...</p>
+  <div class="card" x-data="newHrac()" class="card-md">
+    <h2 class="form-title">Přidat nového hráče</h2>
+    <p class="alert alert-error" x-show="error" x-text="error"></p>
+    <p class="alert alert-success" x-show="success">✅ Hráč přidán! Přesměrovávám...</p>
 
     <div class="form-section">Základní informace</div>
     <div class="form-grid">
