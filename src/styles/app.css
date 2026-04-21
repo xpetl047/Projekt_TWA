@@ -1,5 +1,7 @@
 /* app.css — styly specifické pro HC Mládež (nad styleguide_projekt) */
-
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-family); background: var(--color-background); }
 /* ── Header ── */
 .app-header { background: var(--color-dark); padding: 0 2.4rem; margin-bottom: 2.4rem; }
 .app-header .container { display: flex; align-items: center; height: 5.6rem; gap: 2.4rem; }
