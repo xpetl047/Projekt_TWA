@@ -6,6 +6,7 @@ export type Pozice = 'Útočník'|'Obránce'|'Brankář';
 
 export interface Hrac {
   id: string; jmeno: string; prijmeni: string; narozeni: string;
+  vyska_cm?: number; vaha_kg?: number;
   kategorie: Kategorie; pozice: Pozice; cislo: number; ruka: string;
   rodic_kontakt?: string; aktivni: boolean; vytvoreno: string;
 }
@@ -72,7 +73,22 @@ async function write<T>(key: string, data: T): Promise<void> {
 }
 
 // ── Hráči ──────────────────────────────────────────────
-export const getHraci = () => read<Hrac[]>('hraci', () => import('../data/hraci.json'));
+export const getHraci = async () => {
+  const hraci = await read<Hrac[]>('hraci', () => import('../data/hraci.json'));
+  const { default: seedHraci } = await import('../data/hraci.json');
+  const seedById = new Map((seedHraci as Hrac[]).map((h) => [h.id, h]));
+
+  return hraci.map((h) => {
+    const seed = seedById.get(h.id);
+    if (!seed) return h;
+    return {
+      ...seed,
+      ...h,
+      vyska_cm: h.vyska_cm ?? seed.vyska_cm,
+      vaha_kg: h.vaha_kg ?? seed.vaha_kg,
+    };
+  });
+};
 export const getHrac  = async (id: string) => (await getHraci()).find(h => h.id === id) ?? null;
 export async function createHrac(data: Omit<Hrac,'id'|'vytvoreno'>): Promise<Hrac> {
   const hraci = await getHraci();
