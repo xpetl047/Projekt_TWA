@@ -70,7 +70,7 @@ import AuthGuard from '../../components/AuthGuard.astro';
                     x-text="h.jmeno[0] + h.prijmeni[0]"></div>
                   <div>
                     <div class="player-name" x-text="h.prijmeni + ' ' + h.jmeno"></div>
-                    <div class="player-contact" x-text="h.rodic_kontakt ?? ''"></div>
+                    <div class="player-quick" x-text="quickParams(h)"></div>
                   </div>
                 </div>
               </td>
@@ -113,18 +113,44 @@ import AuthGuard from '../../components/AuthGuard.astro';
     function playersList() {
       return {
         hraci:[], zapasy:[], testy:[], hodnoceniList:[],
+        mereniMap: {}, dochPctMap: {},
         loading: true,
         search: new URLSearchParams(location.search).get('kategorie') ? '' : '',
         filterKat: new URLSearchParams(location.search).get('kategorie') ?? '',
         filterPoz: '', sortBy: 'prijmeni',
         async init() {
-          const [h,z,t,ho] = await Promise.all([
+          const [h,z,t,ho,m,d] = await Promise.all([
             fetch('/api/hraci').then(r=>r.json()),
             fetch('/api/zapasy').then(r=>r.json()),
             fetch('/api/testy').then(r=>r.json()),
             fetch('/api/hodnoceni').then(r=>r.json()),
+            fetch('/api/mereni').then(r=>r.json()),
+            fetch('/api/dochazka').then(r=>r.json()),
           ]);
+
+          const mereniMap = {};
+          for (const rec of m) {
+            const prev = mereniMap[rec.hrac_id];
+            if (!prev || rec.datum > prev.datum) mereniMap[rec.hrac_id] = rec;
+          }
+
+          const totals = {};
+          const present = {};
+          for (const akce of d) {
+            for (const z of (akce.zaznam || [])) {
+              totals[z.hrac_id] = (totals[z.hrac_id] || 0) + 1;
+              if (z.stav === 'pritomen') present[z.hrac_id] = (present[z.hrac_id] || 0) + 1;
+            }
+          }
+
+          const dochPctMap = {};
+          for (const hracId of Object.keys(totals)) {
+            dochPctMap[hracId] = Math.round(((present[hracId] || 0) / totals[hracId]) * 100);
+          }
+
           this.hraci=h; this.zapasy=z; this.testy=t; this.hodnoceniList=ho;
+          this.mereniMap = mereniMap;
+          this.dochPctMap = dochPctMap;
           this.loading=false;
         },
         get filtered() {
@@ -147,6 +173,16 @@ import AuthGuard from '../../components/AuthGuard.astro';
         asistH(id)  { return this.zapasy.flatMap(z=>z.stats).filter(s=>s.hrac_id===id).reduce((a,s)=>a+s.asistence,0); },
         testyH(id)  { return this.testy.filter(t=>t.hrac_id===id).length; },
         hodH(id)    { const ho=this.hodnoceniList.filter(h=>h.hrac_id===id); return ho.length ? Math.round(ho[ho.length-1].celkove) : 0; },
+        quickParams(h) {
+          const m = this.mereniMap[h.id];
+          const vyskaVal = m?.vyska_cm ?? h.vyska_cm;
+          const vahaVal = m?.vaha_kg ?? h.vaha_kg;
+          const vyska = vyskaVal != null ? `${vyskaVal} cm` : '— cm';
+          const vaha = vahaVal != null ? `${vahaVal} kg` : '— kg';
+          const doch = this.dochPctMap[h.id];
+          const dochText = doch === undefined ? '— % docházka' : `${doch} % docházka`;
+          return `${vyska} · ${vaha} · ${dochText}`;
+        },
         vek(d)      { return new Date().getFullYear()-new Date(d).getFullYear(); },
       };
     }
