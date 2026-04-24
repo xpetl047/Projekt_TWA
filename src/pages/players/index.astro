@@ -175,8 +175,10 @@ import AuthGuard from '../../components/AuthGuard.astro';
         hodH(id)    { const ho=this.hodnoceniList.filter(h=>h.hrac_id===id); return ho.length ? Math.round(ho[ho.length-1].celkove) : 0; },
         quickParams(h) {
           const m = this.mereniMap[h.id];
-          const vyska = m?.vyska_cm ? `${m.vyska_cm} cm` : '— cm';
-          const vaha = m?.vaha_kg ? `${m.vaha_kg} kg` : '— kg';
+          const vyskaVal = m?.vyska_cm ?? h.vyska_cm;
+          const vahaVal = m?.vaha_kg ?? h.vaha_kg;
+          const vyska = vyskaVal != null ? `${vyskaVal} cm` : '— cm';
+          const vaha = vahaVal != null ? `${vahaVal} kg` : '— kg';
           const doch = this.dochPctMap[h.id];
           const dochText = doch === undefined ? '— % docházka' : `${doch} % docházka`;
           return `${vyska} · ${vaha} · ${dochText}`;
