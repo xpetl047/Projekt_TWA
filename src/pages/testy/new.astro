@@ -8,7 +8,7 @@ const preselect = Astro.url.searchParams.get('hrac') ?? '';
 ---
 <MainLayout title="Zadat testy | HC Mládež" activeNav="testy">
   <AuthGuard />
-  <nav class="breadcrumb"><a href="/testy">← Zpět na testy</a></nav
+  <nav class="breadcrumb"><a href="/testy">← Zpět na testy</a></nav>
   <div class="card" x-data="newTest()" class="card-md">
     <h2 class="form-title">Zadat fyzické & bruslařské testy</h2>
     <p class="alert alert-error" x-show="error" x-text="error"></p>
