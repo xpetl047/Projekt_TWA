@@ -1,55 +1,63 @@
 ---
+export const prerender = false;
 import MainLayout from '../../layouts/MainLayout.astro';
 import AuthGuard from '../../components/AuthGuard.astro';
+import { getHraci } from '../../lib/db';
+const hraci = (await getHraci()).filter(h=>h.aktivni);
+const preselect = Astro.url.searchParams.get('hrac') ?? '';
 ---
-<MainLayout title="Zápasy | HC Mládež" activeNav="zapasy">
+<MainLayout title="Zadat testy | HC Mládež" activeNav="testy">
   <AuthGuard />
-  <div x-data="zapasyList()" x-init="init()">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Zápasy sezóny</h1>
-        <p class="page-sub" x-text="`${zapasy.length} zápasů`"></p>
+  <nav class="breadcrumb"><a href="/testy">← Zpět na testy</a></nav
+  <div class="card" x-data="newTest()" class="card-md">
+    <h2 class="form-title">Zadat fyzické & bruslařské testy</h2>
+    <p class="alert alert-error" x-show="error" x-text="error"></p>
+    <p class="alert alert-success" x-show="success">✅ Test uložen!</p>
+    <div class="form-grid form-grid-2">
+      <div class="form-group">
+        <label>Hráč *</label>
+        <select class="input" x-model="f.hrac_id">
+          {hraci.map(h=><option value={h.id} selected={h.id===preselect}>{h.prijmeni} {h.jmeno} ({h.kategorie})</option>)}
+        </select>
       </div>
-      <div class="page-actions">
-        <a href="/zapasy/new" class="btn btn-primary">+ Přidat zápas</a>
-      </div>
+      <div class="form-group"><label>Datum *</label><input class="input" type="date" x-model="f.datum" /></div>
     </div>
-    <div x-show="loading" class="loading-state"><div class="spinner"></div><p>Načítám...</p></div>
-    <div x-show="!loading" class="card card-flush">
-      <table class="table">
-        <thead><tr><th>Datum</th><th>Kategorie</th><th>Soupeř</th><th>Místo</th><th>Výsledek</th><th>Trenér</th><th>Poznámka</th></tr></thead>
-        <tbody>
-          <template x-for="z in zapasy" :key="z.id">
-            <tr>
-              <td class="text-sm" x-text="fmtDate(z.datum)"></td>
-              <td><span class="badge badge-kat" x-text="z.kategorie"></span></td>
-              <td x-text="z.souper"></td>
-              <td class="text-sm text-muted" x-text="z.domaci ? '🏠 Domácí' : '✈️ Hosté'"></td>
-              <td>
-                <span class="badge font-bold"
-                  :class="z.skore_my>z.skore_souper?'badge-closed':z.skore_my<z.skore_souper?'badge-high':'badge-low'"
-                  x-text="`${z.skore_my} : ${z.skore_souper}`"></span>
-              </td>
-              <td class="text-sm text-muted" x-text="z.trener"></td>
-              <td class="text-sm text-muted" x-text="z.poznamka??''"></td>
-            </tr>
-          </template>
-          <tr x-show="zapasy.length===0&&!loading">
-            <td colspan="7" class="empty-state">Zatím žádné zápasy. <a href="/zapasy/new">Přidat →</a></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="form-section">Fyzické testy</div>
+    <div class="form-grid form-grid-3">
+      <div class="form-group"><label>Sprint 30m (s)</label><input class="input" type="number" step="0.01" x-model="f.sprint_30m" placeholder="5,12" /></div>
+      <div class="form-group"><label>Sprint 10m (s)</label><input class="input" type="number" step="0.01" x-model="f.sprint_10m" placeholder="2,31" /></div>
+      <div class="form-group"><label>Skok dálka (cm)</label><input class="input" type="number" x-model="f.skok_dalka" placeholder="162" /></div>
+      <div class="form-group"><label>Kliky (počet)</label><input class="input" type="number" x-model="f.kliky" placeholder="18" /></div>
+      <div class="form-group"><label>Dřepy (počet)</label><input class="input" type="number" x-model="f.drepy" placeholder="25" /></div>
+      <div class="form-group"><label>Beep test (level)</label><input class="input" type="number" step="0.1" x-model="f.beep_test" placeholder="7,2" /></div>
+    </div>
+    <div class="form-section">Bruslařské testy</div>
+    <div class="form-grid form-grid-3">
+      <div class="form-group"><label>Sprint (s)</label><input class="input" type="number" step="0.01" x-model="f.brusle_sprint" placeholder="6,85" /></div>
+      <div class="form-group"><label>Obrátky 8-figure (s)</label><input class="input" type="number" step="0.1" x-model="f.brusle_obratky" placeholder="18,4" /></div>
+      <div class="form-group"><label>Zpětné bruslení (s)</label><input class="input" type="number" step="0.01" x-model="f.brusle_zpetne" placeholder="9,5" /></div>
+    </div>
+    <div class="form-group"><label>Poznámka</label><textarea class="input" rows="2" x-model="f.poznamka"></textarea></div>
+    <div class="form-actions">
+      <a href="/testy" class="btn btn-secondary">Zrušit</a>
+      <button class="btn btn-primary" :disabled="saving" @click="save()">
+        <span x-show="!saving">Uložit testy</span><span x-show="saving">Ukládám...</span>
+      </button>
     </div>
   </div>
   <script is:inline>
-    function zapasyList() {
+    function newTest() {
+      const tr=()=>{try{return JSON.parse(localStorage.getItem('trener_session')||'null');}catch{return null;}};
       return {
-        zapasy:[], loading:true,
-        async init() {
-          this.zapasy = (await fetch('/api/zapasy').then(r=>r.json())).sort((a,b)=>b.datum.localeCompare(a.datum));
-          this.loading=false;
-        },
-        fmtDate(d) { return new Date(d).toLocaleDateString('cs-CZ'); },
+        f:{hrac_id:new URLSearchParams(location.search).get('hrac')||'',datum:new Date().toISOString().slice(0,10),trener:tr()?.jmeno||'',sprint_30m:null,sprint_10m:null,skok_dalka:null,kliky:null,drepy:null,beep_test:null,brusle_sprint:null,brusle_obratky:null,brusle_zpetne:null,poznamka:''},
+        saving:false,success:false,error:'',
+        async save(){
+          if(!this.f.hrac_id||!this.f.datum){this.error='Vyberte hráče a datum.';return;}
+          this.saving=true;this.error='';
+          this.f.trener=tr()?.jmeno||'';
+          try{const res=await fetch('/api/testy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(this.f)});if(!res.ok)throw new Error('Chyba');this.success=true;setTimeout(()=>window.location.href=`/players/${this.f.hrac_id}`,1000);}
+          catch(e){this.error=e.message;}finally{this.saving=false;}
+        }
       };
     }
   </script>
