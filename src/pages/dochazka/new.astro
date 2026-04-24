@@ -7,12 +7,13 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
 ---
 <MainLayout title="Zapsat docházku | HC Mládež" activeNav="dochazka">
   <AuthGuard />
+  <div class="dochazka-new-page">
   <nav class="breadcrumb"><a href="/dochazka">← Zpět na docházku</a></nav>
-  <div class="card" x-data="newDochazka()" x-init="init()" style="max-width:90rem">
+  <div class="card dochazka-new-card" x-data="newDochazka" x-init="init()" style="max-width:90rem">
     <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Zapsat docházku</h2>
     <p class="alert alert-error"   x-show="error"   x-text="error" style="margin-bottom:1.6rem"></p>
     <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Docházka uložena!</p>
-    <div class="form-grid form-grid-3">
+    <div class="form-grid form-grid-3 dochazka-top-grid">
       <div class="form-group"><label>Datum *</label><input class="input" type="date" x-model="f.datum" /></div>
       <div class="form-group"><label>Typ akce</label><select class="input" x-model="f.typ"><option value="trenink">Trénink</option><option value="zapas">Zápas</option><option value="ostatni">Ostatní</option></select></div>
       <div class="form-group"><label>Popis</label><input class="input" type="text" x-model="f.popis" placeholder="Bruslení + střelba" /></div>
@@ -21,44 +22,60 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
     <div style="font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;border-bottom:.1rem solid #e4e4e4;padding-bottom:.8rem;margin:2rem 0 1.4rem">
       Hráči — <span x-text="f.kategorie"></span>
     </div>
-    <table class="table" style="margin-bottom:1.6rem">
-      <thead><tr><th>Hráč</th><th style="text-align:center;width:8rem">Přítomen</th><th style="text-align:center;width:8rem">Omluven</th><th style="text-align:center;width:8rem">Neomluven</th><th>Poznámka</th></tr></thead>
-      <tbody>
-        <template x-for="z in zaznam" :key="z.hrac_id">
-          <tr>
-            <td x-text="z.jmeno"></td>
-            <td style="text-align:center"><input type="radio" :name="`d_${z.hrac_id}`" value="pritomen" x-model="z.stav" /></td>
-            <td style="text-align:center"><input type="radio" :name="`d_${z.hrac_id}`" value="omluven"  x-model="z.stav" /></td>
-            <td style="text-align:center"><input type="radio" :name="`d_${z.hrac_id}`" value="neomluven" x-model="z.stav" /></td>
-            <td><input class="input" type="text" x-model="z.poznamka" placeholder="" style="padding:.4rem .8rem;font-size:1.3rem" /></td>
-          </tr>
-        </template>
-        <tr x-show="zaznam.length===0"><td colspan="5" class="empty-state">V kategorii nejsou žádní hráči.</td></tr>
-      </tbody>
-    </table>
-    <div class="form-actions">
+    <div class="table-scroll dochazka-table-scroll" style="margin-bottom:1.6rem">
+      <table class="table dochazka-table">
+        <thead><tr><th>Hráč</th><th style="text-align:center;width:8rem">Přítomen</th><th style="text-align:center;width:8rem">Omluven</th><th style="text-align:center;width:8rem">Neomluven</th><th>Poznámka</th></tr></thead>
+        <tbody>
+          <template x-for="z in zaznam" :key="z.hrac_id">
+            <tr>
+              <td x-text="z.jmeno"></td>
+              <td style="text-align:center"><input type="radio" :name="`d_${z.hrac_id}`" value="pritomen" x-model="z.stav" /></td>
+              <td style="text-align:center"><input type="radio" :name="`d_${z.hrac_id}`" value="omluven"  x-model="z.stav" /></td>
+              <td style="text-align:center"><input type="radio" :name="`d_${z.hrac_id}`" value="neomluven" x-model="z.stav" /></td>
+              <td><input class="input" type="text" x-model="z.poznamka" placeholder="" style="padding:.4rem .8rem;font-size:1.3rem" /></td>
+            </tr>
+          </template>
+          <tr x-show="zaznam.length===0"><td colspan="5" class="empty-state">V kategorii nejsou žádní hráči.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions dochazka-actions">
       <a href="/dochazka" class="btn btn-secondary">Zrušit</a>
-      <button class="btn btn-primary" :disabled="saving" @click="save()">
-        <span x-show="!saving">Uložit docházku</span><span x-show="saving">Ukládám...</span>
+      <button type="button" class="btn btn-primary" :disabled="saving" @click="save()">
+        <span x-show="!saving">Uložit docházku</span>
+        <span x-show="saving">Ukládám...</span>
       </button>
     </div>
   </div>
+  </div>
   <script is:inline define:vars={{ hraci }}>
-    function newDochazka() {
-      const tr=()=>{try{return JSON.parse(localStorage.getItem('trener_session')||'null');}catch{return null;}};
-      return {
-        f:{datum:new Date().toISOString().slice(0,10),typ:'trenink',popis:'',kategorie:'U13-U14'},
-        zaznam:[],saving:false,success:false,error:'',
-        init(){this.loadHraci();},
-        loadHraci(){this.zaznam=hraci.filter(h=>h.kategorie===this.f.kategorie).map(h=>({hrac_id:h.id,jmeno:h.prijmeni+' '+h.jmeno,stav:'pritomen',poznamka:''}));},
-        async save(){
-          if(!this.f.datum){this.error='Vyplňte datum.';return;}
-          this.saving=true;this.error='';
-          const payload={...this.f,trener:tr()?.jmeno||'',zaznam:this.zaznam.map(z=>({hrac_id:z.hrac_id,stav:z.stav,poznamka:z.poznamka||undefined}))};
-          try{const res=await fetch('/api/dochazka',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!res.ok)throw new Error('Chyba');this.success=true;setTimeout(()=>window.location.href='/dochazka',1000);}
-          catch(e){this.error=e.message;}finally{this.saving=false;}
-        }
-      };
+    const allHraci = hraci;
+    const registerDochazka = () => {
+      Alpine.data('newDochazka', () => {
+        const tr = () => {
+          try { return JSON.parse(localStorage.getItem('trener_session') || 'null'); }
+          catch { return null; }
+        };
+        return {
+          f:{datum:new Date().toISOString().slice(0,10),typ:'trenink',popis:'',kategorie:'U13-U14'},
+          zaznam:[],saving:false,success:false,error:'',
+          init(){this.loadHraci();},
+          loadHraci(){this.zaznam=allHraci.filter(h=>h.kategorie===this.f.kategorie).map(h=>({hrac_id:h.id,jmeno:h.prijmeni+' '+h.jmeno,stav:'pritomen',poznamka:''}));},
+          async save(){
+            if(!this.f.datum){this.error='Vyplňte datum.';return;}
+            this.saving=true;this.error='';
+            const payload={...this.f,trener:tr()?.jmeno||'',zaznam:this.zaznam.map(z=>({hrac_id:z.hrac_id,stav:z.stav,poznamka:z.poznamka||undefined}))};
+            try{const res=await fetch('/api/dochazka',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!res.ok)throw new Error('Chyba');this.success=true;window.alert('OK, docházka byla uložena.');setTimeout(()=>window.location.href='/dochazka',300);}
+            catch(e){this.error=e.message;}finally{this.saving=false;}
+          }
+        };
+      });
+    };
+
+    if (window.Alpine) {
+      registerDochazka();
+    } else {
+      document.addEventListener('alpine:init', registerDochazka);
     }
   </script>
 </MainLayout>

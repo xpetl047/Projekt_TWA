@@ -8,7 +8,7 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
 <MainLayout title="Přidat zápas | HC Mládež" activeNav="zapasy">
   <AuthGuard />
   <nav class="breadcrumb"><a href="/zapasy">← Zpět na zápasy</a></nav>
-  <div class="card" x-data="newZapas()" x-init="init()" style="max-width:90rem">
+  <div class="card" x-data="newZapas" x-init="init()" style="max-width:90rem">
     <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Přidat zápas</h2>
     <p class="alert alert-error"   x-show="error"   x-text="error" style="margin-bottom:1.6rem"></p>
     <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Zápas uložen!</p>
@@ -39,27 +39,39 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
     </table>
     <div class="form-actions">
       <a href="/zapasy" class="btn btn-secondary">Zrušit</a>
-      <button class="btn btn-primary" :disabled="saving" @click="save()">
+      <button type="button" class="btn btn-primary" :disabled="saving" @click="save()">
         <span x-show="!saving">Přidat zápas</span><span x-show="saving">Ukládám...</span>
       </button>
     </div>
   </div>
   <script is:inline define:vars={{ hraci }}>
-    function newZapas() {
-      const tr=()=>{try{return JSON.parse(localStorage.getItem('trener_session')||'null');}catch{return null;}};
-      return {
-        f:{datum:new Date().toISOString().slice(0,10),kategorie:'U13-U14',souper:'',domaci:true,skore_my:0,skore_souper:0,poznamka:''},
-        stats:[],saving:false,success:false,error:'',
-        init(){this.loadHraci();},
-        loadHraci(){this.stats=hraci.filter(h=>h.kategorie===this.f.kategorie).map(h=>({hrac_id:h.id,jmeno:h.prijmeni+' '+h.jmeno,goly:0,asistence:0,plusMinus:0,trestne:0}));},
-        async save(){
-          if(!this.f.souper||!this.f.datum){this.error='Vyplňte soupeře a datum.';return;}
-          this.saving=true;this.error='';
-          const payload={...this.f,trener:tr()?.jmeno||'',stats:this.stats.filter(s=>s.goly||s.asistence||s.plusMinus||s.trestne).map(s=>({id:'',zapas_id:'',hrac_id:s.hrac_id,goly:+s.goly,asistence:+s.asistence,plusMinus:+s.plusMinus,trestne:+s.trestne}))};
-          try{const res=await fetch('/api/zapasy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!res.ok)throw new Error('Chyba');this.success=true;setTimeout(()=>window.location.href='/zapasy',1000);}
-          catch(e){this.error=e.message;}finally{this.saving=false;}
-        }
-      };
+    const allHraci = hraci;
+    const registerZapas = () => {
+      Alpine.data('newZapas', () => {
+        const tr = () => {
+          try { return JSON.parse(localStorage.getItem('trener_session') || 'null'); }
+          catch { return null; }
+        };
+        return {
+          f:{datum:new Date().toISOString().slice(0,10),kategorie:'U13-U14',souper:'',domaci:true,skore_my:0,skore_souper:0,poznamka:''},
+          stats:[],saving:false,success:false,error:'',
+          init(){this.loadHraci();},
+          loadHraci(){this.stats=allHraci.filter(h=>h.kategorie===this.f.kategorie).map(h=>({hrac_id:h.id,jmeno:h.prijmeni+' '+h.jmeno,goly:0,asistence:0,plusMinus:0,trestne:0}));},
+          async save(){
+            if(!this.f.souper||!this.f.datum){this.error='Vyplňte soupeře a datum.';return;}
+            this.saving=true;this.error='';
+            const payload={...this.f,trener:tr()?.jmeno||'',stats:this.stats.filter(s=>s.goly||s.asistence||s.plusMinus||s.trestne).map(s=>({id:'',zapas_id:'',hrac_id:s.hrac_id,goly:+s.goly,asistence:+s.asistence,plusMinus:+s.plusMinus,trestne:+s.trestne}))};
+            try{const res=await fetch('/api/zapasy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!res.ok)throw new Error('Chyba');this.success=true;window.alert('OK, zápas byl uložen.');setTimeout(()=>window.location.href='/zapasy',300);}
+            catch(e){this.error=e.message;}finally{this.saving=false;}
+          }
+        };
+      });
+    };
+
+    if (window.Alpine) {
+      registerZapas();
+    } else {
+      document.addEventListener('alpine:init', registerZapas);
     }
   </script>
 </MainLayout>

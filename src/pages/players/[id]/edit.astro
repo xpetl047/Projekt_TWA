@@ -1,0 +1,122 @@
+---
+export const prerender = false;
+import MainLayout from '../../../layouts/MainLayout.astro';
+import AuthGuard from '../../../components/AuthGuard.astro';
+import { getHrac } from '../../../lib/db';
+
+const { id } = Astro.params;
+const hrac = await getHrac(id!);
+if (!hrac) return Astro.redirect('/players');
+const initialData = {
+  id: hrac.id,
+  jmeno: hrac.jmeno ?? '',
+  prijmeni: hrac.prijmeni ?? '',
+  cislo: hrac.cislo ?? '',
+  kategorie: hrac.kategorie ?? 'U13-U14',
+  pozice: hrac.pozice ?? 'Útočník',
+  narozeni: hrac.narozeni ? String(hrac.narozeni).slice(0, 10) : '',
+  ruka: hrac.ruka ?? 'Levá',
+  rodic_kontakt: hrac.rodic_kontakt ?? '',
+  aktivni: hrac.aktivni ?? true
+};
+---
+<MainLayout title="Upravit hráče | HC Mládež" activeNav="players">
+  <AuthGuard />
+  <nav class="breadcrumb"><a href={`/players/${hrac.id}`}>← Zpět na detail hráče</a></nav>
+
+  <div class="card" x-data="editHrac" style="max-width:80rem">
+    <h2 style="font-size:2rem;font-weight:700;margin-bottom:2rem">Upravit hráče</h2>
+    <p class="alert alert-error" x-show="error" x-text="error" style="margin-bottom:1.6rem"></p>
+    <p class="alert alert-success" x-show="success" style="margin-bottom:1.6rem">✅ Hráč upraven! Přesměrovávám...</p>
+
+    <div class="form-section">Základní informace</div>
+    <div class="form-grid">
+      <div class="form-group col-full">
+        <label>Křestní jméno *</label>
+        <input class="input" type="text" x-model="f.jmeno" placeholder="Tomáš" />
+      </div>
+      <div class="form-group">
+        <label>Příjmení *</label>
+        <input class="input" type="text" x-model="f.prijmeni" placeholder="Novák" />
+      </div>
+      <div class="form-group">
+        <label>Číslo dresu *</label>
+        <input class="input" type="number" x-model="f.cislo" min="1" max="99" />
+      </div>
+      <div class="form-group">
+        <label>Kategorie</label>
+        <select class="input" x-model="f.kategorie">
+          <option>U8-U10</option><option>U11-U12</option>
+          <option>U13-U14</option><option>U15-U16</option><option>U17-U20</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pozice</label>
+        <select class="input" x-model="f.pozice">
+          <option>Útočník</option><option>Obránce</option><option>Brankář</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Datum narození</label>
+        <input class="input" type="date" x-model="f.narozeni" />
+      </div>
+      <div class="form-group">
+        <label>Hokejka</label>
+        <select class="input" x-model="f.ruka">
+          <option>Levá</option><option>Pravá</option>
+        </select>
+      </div>
+      <div class="form-group col-full">
+        <label>Kontakt na rodiče</label>
+        <input class="input" type="text" x-model="f.rodic_kontakt" placeholder="Jana Nováková, 777 123 456" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href={`/players/${hrac.id}`} class="btn btn-secondary">Zrušit</a>
+      <button type="button" class="btn btn-primary" :disabled="saving" @click="save()">
+        <span x-text="saving ? 'Ukládám...' : 'Uložit změny'"></span>
+      </button>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ initialData }}>
+    const registerEditHrac = () => {
+      Alpine.data('editHrac', () => ({
+        f: { ...initialData },
+        saving: false,
+        success: false,
+        error: '',
+        async save() {
+          if (!this.f.jmeno || !this.f.prijmeni || !this.f.cislo) {
+            this.error = 'Vyplňte jméno, příjmení a číslo.';
+            return;
+          }
+          this.saving = true;
+          this.error = '';
+          try {
+            const res = await fetch(`/api/hraci/${this.f.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.f)
+            });
+            if (!res.ok) throw new Error('Chyba při ukládání');
+            this.success = true;
+            window.alert('OK, změny byly uloženy.');
+            window.location.href = `/players/${this.f.id}`;
+          } catch (e) {
+            this.error = e?.message ?? 'Nepodařilo se uložit změny.';
+          } finally {
+            this.saving = false;
+          }
+        }
+      }));
+    };
+
+    if (window.Alpine) {
+      registerEditHrac();
+    } else {
+      document.addEventListener('alpine:init', registerEditHrac);
+    }
+  </script>
+</MainLayout>

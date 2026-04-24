@@ -9,6 +9,9 @@ body { font-family: var(--font-family); background: var(--color-background); }
   background: #0f1e35;
   padding: 0 2.4rem;
   margin-bottom: 2.4rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 .app-header .container {
   display: flex;
@@ -145,7 +148,13 @@ tr:hover .row-actions { opacity: 1; }
 .metric-lbl  { font-size: 1.2rem; color: #6b7280; margin-top: .4rem; text-transform: uppercase; letter-spacing: .04em; }
 
 /* ── Kategorie ── */
-.kat-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 1.2rem; margin-bottom: 2.4rem; }
+.kat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(10rem, 20rem));
+  justify-content: start;
+  gap: 1.2rem;
+  margin-bottom: 2.4rem;
+}
 .kat-card {
   text-align: center;
   text-decoration: none;
@@ -203,6 +212,7 @@ tr:hover .row-actions { opacity: 1; }
 .name-cell { display: flex; align-items: center; gap: 1rem; }
 .player-name    { font-weight: 600; font-size: 1.4rem; }
 .player-contact { font-size: 1.2rem; color: #9ca3af; }
+.player-quick   { font-size: 1.2rem; color: #9ca3af; }
 
 /* ── Hero (detail hráče) ── */
 .player-hero { display: flex; gap: 2.4rem; align-items: flex-start; margin-bottom: 2rem; }
@@ -229,6 +239,8 @@ tr:hover .row-actions { opacity: 1; }
 }
 .tab-btn:hover { color: #111; }
 .tab-btn.active { color: #166534; border-bottom-color: var(--color-primary); }
+.tab-panel { min-height: 28rem; }
+.records-card { min-height: 22rem; }
 
 /* ── Progress (vývoj testů) ── */
 .progress-card  { margin-bottom: 1.2rem; }
@@ -247,6 +259,141 @@ tr:hover .row-actions { opacity: 1; }
 .radar-track { flex: 1; background: #f3f4f6; border-radius: 99rem; height: .8rem; overflow: hidden; }
 .radar-fill  { height: 100%; border-radius: 99rem; background: var(--color-primary); transition: width .4s; }
 .radar-val   { font-size: 1.2rem; font-weight: 700; width: 3rem; text-align: right; }
+
+/* ── Responsive Mobile (app-specific) ── */
+@media (max-width: 768px) {
+  .app-header .container {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 1.2rem 0;
+    gap: 1.2rem;
+    align-items: center;
+  }
+  
+  .header-brand {
+    width: auto;
+    margin-right: auto;
+    justify-content: flex-start;
+    order: 1;
+  }
+
+  .header-nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    padding-bottom: 0.8rem;
+    justify-content: center;
+    gap: 0.2rem;
+  }
+  
+  .nav-link {
+    flex: 1 1 0;
+    max-width: 8rem;
+    font-size: 1.1rem;
+    padding: 0.6rem 0.2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.3;
+  }
+
+  /* Scrollbar hide for mobile nav but keep it scrollable */
+  .header-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .header-nav {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .header-user {
+    border-left: none;
+    padding-left: 0;
+    width: auto;
+    margin-left: auto;
+    justify-content: flex-end;
+    order: 2;
+  }
+
+  .header-user .user-avatar,
+  .header-user .user-name {
+    display: none;
+  }
+
+  .btn-logout {
+    position: static;
+    transform: none;
+    color: rgba(255,255,255,.8);
+    font-size: 1.4rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .kat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+  /* Zabrání přetékání grid itemů s dlouhým obsahem (např. tabulky) */
+  .two-col > div {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quick-actions {
+    flex-direction: column;
+  }
+  .qa {
+    justify-content: center;
+  }
+
+  .player-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .hero-meta {
+    justify-content: center;
+  }
+  .hero-actions {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .radar-item {
+    flex-wrap: wrap;
+  }
+  .radar-label {
+    width: 100%;
+    margin-bottom: 0.4rem;
+  }
+  .radar-val {
+    width: auto;
+    min-width: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .kat-grid {
+    grid-template-columns: 1fr; 
+  }
+}
 
 /* ── Hodnocení ── */
 .eval-card       { margin-bottom: 1.2rem; }
@@ -318,4 +465,47 @@ tr:hover .row-actions { opacity: 1; }
   .two-col      { grid-template-columns: 1fr; }
   .progress-grid{ grid-template-columns: 1fr; }
   .eval-texts   { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .dochazka-new-page .dochazka-new-card {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .dochazka-new-page .dochazka-top-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .dochazka-new-page .dochazka-top-grid .form-group {
+    min-width: 0;
+  }
+
+  .dochazka-new-page .dochazka-top-grid .input {
+    width: 100%;
+  }
+
+  .dochazka-new-page .dochazka-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .dochazka-new-page .dochazka-table {
+    min-width: 62rem;
+  }
+
+  .dochazka-new-page .dochazka-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.8rem;
+  }
+
+  .dochazka-new-page .dochazka-actions .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 4.2rem;
+  }
 }

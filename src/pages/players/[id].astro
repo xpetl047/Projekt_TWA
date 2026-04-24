@@ -92,9 +92,9 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
     </div>
 
     <!-- Zápasy -->
-    <div x-show="tab==='statistiky'">
+    <div x-show="tab==='statistiky'" class="tab-panel">
       {zapasStats.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card records-card" style="padding:0">
           <table class="table">
             <thead><tr><th>Datum</th><th>Soupeř</th><th>Výsledek</th><th>G</th><th>A</th><th>B</th><th>+/−</th><th>TM</th></tr></thead>
             <tbody>
@@ -118,12 +118,12 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
           </table>
         </div>
       ) : (
-        <div class="card empty-state">Zatím žádné statistiky. <a href="/zapasy/new">Přidat zápas →</a></div>
+        <div class="card empty-state records-card">Zatím žádné statistiky. <a href="/zapasy/new">Přidat zápas →</a></div>
       )}
     </div>
 
     <!-- Testy -->
-    <div x-show="tab==='testy'">
+    <div x-show="tab==='testy'" class="tab-panel">
       <div class="section-header" style="margin-top:0">
         <h3 class="section-title">Historie testů</h3>
         <a href={`/testy/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat test</a>
@@ -182,7 +182,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
       )}
 
       {testy.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card records-card" style="padding:0">
           <table class="table">
             <thead><tr><th>Datum</th><th>Trenér</th><th>Sprint 30m</th><th>Skok</th><th>Kliky</th><th>Beep</th><th>Brusle sprint</th><th>Brusle obr.</th><th>Poznámka</th></tr></thead>
             <tbody>
@@ -203,18 +203,18 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
           </table>
         </div>
       ) : (
-        <div class="card empty-state">Zatím žádné testy. <a href={`/testy/new?hrac=${hrac.id}`}>Přidat →</a></div>
+        <div class="card empty-state records-card">Zatím žádné testy. <a href={`/testy/new?hrac=${hrac.id}`}>Přidat →</a></div>
       )}
     </div>
 
     <!-- Měření -->
-    <div x-show="tab==='mereni'">
+    <div x-show="tab==='mereni'" class="tab-panel">
       <div class="section-header" style="margin-top:0">
         <h3 class="section-title">Tělesný vývoj</h3>
         <a href={`/mereni/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat měření</a>
       </div>
       {mereni.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card records-card" style="padding:0">
           <table class="table">
             <thead><tr><th>Datum</th><th>Výška</th><th>Váha</th><th>BMI</th><th>Trenér</th><th>Poznámka</th></tr></thead>
             <tbody>
@@ -232,12 +232,12 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
           </table>
         </div>
       ) : (
-        <div class="card empty-state">Zatím žádná měření. <a href={`/mereni/new?hrac=${hrac.id}`}>Přidat →</a></div>
+        <div class="card empty-state records-card">Zatím žádná měření. <a href={`/mereni/new?hrac=${hrac.id}`}>Přidat →</a></div>
       )}
     </div>
 
     <!-- Docházka -->
-    <div x-show="tab==='dochazka'">
+    <div x-show="tab==='dochazka'" class="tab-panel">
       <div class="section-header" style="margin-top:0">
         <h3 class="section-title">
           Docházka
@@ -246,7 +246,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
         <a href="/dochazka/new" class="btn btn-primary btn-sm">+ Zapsat</a>
       </div>
       {dochazka.length > 0 ? (
-        <div class="card" style="padding:0">
+        <div class="card records-card" style="padding:0">
           <table class="table">
             <thead><tr><th>Datum</th><th>Typ</th><th>Akce</th><th>Stav</th><th>Poznámka</th></tr></thead>
             <tbody>
@@ -267,12 +267,12 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
           </table>
         </div>
       ) : (
-        <div class="card empty-state">Zatím žádné záznamy. <a href="/dochazka/new">Zapsat →</a></div>
+        <div class="card empty-state records-card">Zatím žádné záznamy. <a href="/dochazka/new">Zapsat →</a></div>
       )}
     </div>
 
     <!-- Hodnocení -->
-    <div x-show="tab==='hodnoceni'">
+    <div x-show="tab==='hodnoceni'" class="tab-panel">
       <div class="section-header" style="margin-top:0">
         <h3 class="section-title">Hodnocení trenéra</h3>
         <a href={`/hodnoceni/new?hrac=${hrac.id}`} class="btn btn-primary btn-sm">+ Přidat</a>
@@ -301,7 +301,7 @@ const pozBadge    = hrac.pozice==='Útočník' ? 'badge-utocnik' : hrac.pozice==
           </div>
         </div>
       ))}
-      {hodnoceni.length===0 && <div class="card empty-state">Zatím žádné hodnocení. <a href={`/hodnoceni/new?hrac=${hrac.id}`}>Přidat →</a></div>}
+      {hodnoceni.length===0 && <div class="card empty-state records-card">Zatím žádné hodnocení. <a href={`/hodnoceni/new?hrac=${hrac.id}`}>Přidat →</a></div>}
     </div>
 
   </div>
