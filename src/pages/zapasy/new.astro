@@ -28,10 +28,10 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
         <template x-for="s in stats" :key="s.hrac_id">
           <tr>
             <td x-text="s.jmeno"></td>
-            <td><input class="input" type="number" min="0" x-model="s.goly"      class="input-cell" /></td>
-            <td><input class="input" type="number" min="0" x-model="s.asistence" class="input-cell" /></td>
-            <td><input class="input" type="number"         x-model="s.plusMinus" class="input-cell" /></td>
-            <td><input class="input" type="number" min="0" x-model="s.trestne"   class="input-cell" /></td>
+            <td><input class="input input-cell" type="number" min="0" x-model.number="s.goly"      @input="s.edited=true" @change="if(isNaN(s.goly)||s.goly===null) s.goly=0" /></td>
+            <td><input class="input input-cell" type="number" min="0" x-model.number="s.asistence" @input="s.edited=true" @change="if(isNaN(s.asistence)||s.asistence===null) s.asistence=0" /></td>
+            <td><input class="input input-cell" type="number"         x-model.number="s.plusMinus" @input="s.edited=true" @change="if(isNaN(s.plusMinus)||s.plusMinus===null) s.plusMinus=0" /></td>
+            <td><input class="input input-cell" type="number" min="0" x-model.number="s.trestne"   @input="s.edited=true" @change="if(isNaN(s.trestne)||s.trestne===null) s.trestne=0" /></td>
           </tr>
         </template>
         <tr x-show="stats.length===0"><td colspan="5" class="empty-state">Vyberte kategorii výše.</td></tr>
@@ -56,11 +56,16 @@ const hraci = (await getHraci()).filter(h=>h.aktivni);
           f:{datum:new Date().toISOString().slice(0,10),kategorie:'U13-U14',souper:'',domaci:true,skore_my:0,skore_souper:0,poznamka:''},
           stats:[],saving:false,success:false,error:'',
           init(){this.loadHraci();},
-          loadHraci(){this.stats=allHraci.filter(h=>h.kategorie===this.f.kategorie).map(h=>({hrac_id:h.id,jmeno:h.prijmeni+' '+h.jmeno,goly:0,asistence:0,plusMinus:0,trestne:0}));},
+          loadHraci(){
+            this.stats=allHraci
+              .filter(h=>String(h.kategorie).trim()===String(this.f.kategorie).trim())
+              .map(h=>({hrac_id:h.id,jmeno:h.prijmeni+' '+h.jmeno,goly:0,asistence:0,plusMinus:0,trestne:0,edited:false}));
+          },
           async save(){
             if(!this.f.souper||!this.f.datum){this.error='Vyplňte soupeře a datum.';return;}
             this.saving=true;this.error='';
-            const payload={...this.f,trener:tr()?.jmeno||'',stats:this.stats.filter(s=>s.goly||s.asistence||s.plusMinus||s.trestne).map(s=>({id:'',zapas_id:'',hrac_id:s.hrac_id,goly:+s.goly,asistence:+s.asistence,plusMinus:+s.plusMinus,trestne:+s.trestne}))};
+            const toNum = v => isNaN(+v) ? 0 : +v;
+            const payload={...this.f,trener:tr()?.jmeno||'',stats:this.stats.filter(s=>s.edited||s.goly||s.asistence||s.trestne).map(s=>({id:'',zapas_id:'',hrac_id:s.hrac_id,goly:toNum(s.goly),asistence:toNum(s.asistence),plusMinus:toNum(s.plusMinus),trestne:toNum(s.trestne)}))};
             try{const res=await fetch('/api/zapasy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!res.ok)throw new Error('Chyba');this.success=true;window.alert('OK, zápas byl uložen.');setTimeout(()=>window.location.href='/zapasy',300);}
             catch(e){this.error=e.message;}finally{this.saving=false;}
           }
